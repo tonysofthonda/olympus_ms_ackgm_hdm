@@ -2,26 +2,28 @@ package com.honda.olympus.vo;
 
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
-
 public class MaxTransitCallVO {
 
-	private String rquest;
+	private String request;
 
 	private List<String> details;
 
-	
 	public MaxTransitCallVO() {
 		super();
 	}
-	
 
-	public String getRquest() {
-		return rquest;
+	public MaxTransitCallVO(String request, List<String> details) {
+		super();
+		this.request = request;
+		this.details = details;
 	}
 
-	public void setRquest(String rquest) {
-		this.rquest = rquest;
+	public String getRequest() {
+		return request;
+	}
+
+	public void setRequest(String request) {
+		this.request = request;
 	}
 
 	public List<String> getDetails() {
@@ -31,6 +33,5 @@ public class MaxTransitCallVO {
 	public void setDetails(List<String> details) {
 		this.details = details;
 	}
-
 
 }
