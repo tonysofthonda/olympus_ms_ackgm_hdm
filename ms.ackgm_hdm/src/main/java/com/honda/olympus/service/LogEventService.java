@@ -18,6 +18,7 @@ public class LogEventService {
 	public void sendLogEvent(EventVO message) {
 		try {
 			System.out.println("Calling logEvent service");
+			System.out.println(message.toString());
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
 			RestTemplate restTemplate = new RestTemplate();

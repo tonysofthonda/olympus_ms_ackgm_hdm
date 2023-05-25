@@ -9,7 +9,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -24,23 +23,23 @@ import com.honda.olympus.vo.MaxTransitResponseVO;
 
 @Service
 public class MaxTransitService {
-	
+
 	@Value("${service.urlmax}")
 	private String maxTRansitURI;
-	
+
 	@Value("${service.name}")
 	private String serviceName;
-	
+
 	@Value("${maxtransit.timewait}")
 	private Integer timeOut;
-	
+
 	@Autowired
 	LogEventService logEventService;
-	
+
 	public List<MaxTransitResponseVO> generateCallMaxtransit(MaxTransitCallVO message) {
 
 		List<MaxTransitResponseVO> maxTransitResponse = new ArrayList<>();
-		
+
 		try {
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
@@ -48,43 +47,41 @@ public class MaxTransitService {
 
 			HttpEntity<MaxTransitCallVO> requestEntity = new HttpEntity<>(message, headers);
 
-			ResponseEntity<List<MaxTransitResponseVO>> responseEntity = restTemplate.exchange(maxTRansitURI, HttpMethod.POST,requestEntity,
-					new ParameterizedTypeReference<List<MaxTransitResponseVO>>() {});
+			ResponseEntity<List<MaxTransitResponseVO>> responseEntity = restTemplate.exchange(maxTRansitURI,
+					HttpMethod.POST, requestEntity, new ParameterizedTypeReference<List<MaxTransitResponseVO>>() {
+					});
 
 			System.out.println("Maxtransit request with Status Code: " + responseEntity.getStatusCode());
-			
-			
-			if(!responseEntity.getStatusCode().is2xxSuccessful()) {
-				
-				logEventService.sendLogEvent(
-						new EventVO(serviceName, AckgmConstants.ZERO_STATUS, "La API de max transit retorno un error: "+responseEntity.getStatusCode(), ""));
-				System.out.println("Error calling service, Timeout");
+
+			if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+
+				logEventService.sendLogEvent(new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
+						"La API de MAXTRANSIT retorno un error: " + responseEntity.getStatusCode(), ""));
+				System.out.println("Error calling MAXTRANSIT service");
 			}
-			
+
 			return responseEntity.getBody();
-		} catch(ResourceAccessException r) {
-			
-			logEventService.sendLogEvent(
-					new EventVO(serviceName, AckgmConstants.ZERO_STATUS, "Tiempo de espera agotado en la consulta a la API MAX TRANSIT ubicada en: "+timeOut, ""));
-			System.out.println("Error calling service, Timeout");
-			
+		} catch (ResourceAccessException r) {
+
+			logEventService.sendLogEvent(new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
+					"Tiempo de espera agotado en la consulta a la API MAXTRANSIT ubicada en: " + timeOut, ""));
+			System.out.println("Error calling MAXTRANSIT service, Timeout");
+
 			return maxTransitResponse;
-		}catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("Error calling MaxTransit service");
+			System.out.println("Error calling MAXTRANSIT service");
 			return maxTransitResponse;
-		} 
+		}
 
 	}
-	
-	
-	
+
 	private SimpleClientHttpRequestFactory getClientHttpRequestFactory() {
 
-	    SimpleClientHttpRequestFactory clientHttpRequestFactory  = new SimpleClientHttpRequestFactory();
-	    clientHttpRequestFactory.setConnectTimeout(timeOut);
-	    clientHttpRequestFactory.setReadTimeout(timeOut);
-	    return clientHttpRequestFactory;
+		SimpleClientHttpRequestFactory clientHttpRequestFactory = new SimpleClientHttpRequestFactory();
+		clientHttpRequestFactory.setConnectTimeout(timeOut);
+		clientHttpRequestFactory.setReadTimeout(timeOut);
+		return clientHttpRequestFactory;
 	}
 
 }
