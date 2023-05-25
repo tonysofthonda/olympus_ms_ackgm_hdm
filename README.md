@@ -1,7 +1,7 @@
 
 # Monitor Ackgm_hdm
 
-Its purpose is to review via a scheduller job if **Maxtransit API** provide fixed orders to be validated and set .  
+Its purpose is to review via a scheduller job if **Maxtransit API** provide fixed orders to be validated and set envio_flag as false.  
 
 Once the application has started a shceduller starts running with a customizable parameter of timelapse.  
 
@@ -9,22 +9,22 @@ Once the application has started a shceduller starts running with a customizable
 ## How it works
 
 1. The project includes a properties file  (**application.properties**), with the entries:  
-   `monitor.timelapse: To indicate the host to use to send emails notifications`
-   `mftp.credentials.host, mftp.credentials.port, mftp.credentials.user, mftp.credentials.pass: To indicate user credentials for MFTP server`
-   `monitor.workdir.inbound: To indicate the source folder in witch scheduller will be reading the files`
+   `service.timelapse: To indicate the time service must wait until the next call to **Maxtransit**`
+   `maxtransit.timewait: To indicate the to wait for a Maxtransit response`
 
 2. On a daily basis, the module runs a scheduller customizable job that perform the next:  
      
-3. Perform a conecction to a MFTP server with the provided host & credentials  
-   
-4. If the shceduller finds one or more files, this will select the **First File**, the one with the newest date in the customatizable folder.
+3. Perform a conecction to a database server with the provided host & credentials.
 
-5. At the end, **ms.transferfile** will be called sending the next information: 
+4. Perform a call to **Maxtransit API** to obtain fixed orders to be processed 
+   
+5. If the shceduller finds one or more fixed orders, this will iterate them & validate, if a data error occurs the loop is closed and wait for the next call to **Maxtransit API** call iteration.
+
+6. If at least one entrie is processed, service will return:
 
 {
     "status": 1,
-    "msg":"SUCCESS",
-    "file": "{fileName}"
+    "msg":"SUCCESS"
 }
 
 
