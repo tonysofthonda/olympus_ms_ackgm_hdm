@@ -48,7 +48,7 @@ public class AckgmHdmService {
 	@Autowired
 	private AfeActionRepository afeActionRepository;
 
-	public void callAckgmHd() {
+	public void callAckgmCheckHd() {
 		EventVO event;
 
 		Boolean successFlag = Boolean.FALSE;
@@ -127,31 +127,45 @@ public class AckgmHdmService {
 				}
 
 			} else {
+
 				if (AckgmConstants.FAILED_STATUS.equalsIgnoreCase(maxTransitDetail.getReqstStatus())) {
 
 					if (failedFlow(fixedOrder.getId(), maxTransitDetail)) {
 
 						if (finalFlow(maxTransitDetail, fixedOrder)) {
 							successFlag = Boolean.TRUE;
-							System.out.println("End:: Accepted flow");
+
 						}
-
-					}
-
-				} else
-
-				if (AckgmConstants.CANCELED_STATUS.equalsIgnoreCase(maxTransitDetail.getReqstStatus())) {
-					canceledFlow();
-					
-					if (finalFlow(maxTransitDetail, fixedOrder)) {
-						successFlag = Boolean.TRUE;
-						System.out.println("End:: Accepted flow");
 					}
 
 				}
 
-			}
+				if (AckgmConstants.CANCELED_STATUS.equalsIgnoreCase(maxTransitDetail.getReqstStatus())) {
+					if (canceledFlow(fixedOrder.getId(), maxTransitDetail)) {
+						if (finalFlow(maxTransitDetail, fixedOrder)) {
+							successFlag = Boolean.TRUE;
 
+						}
+					}
+				}
+
+				// request_status invaluid
+				System.out.println("El reqst_status no es valido: " + maxTransitDetail.getReqstStatus());
+				event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
+						"El reqst_status no es valido: " + maxTransitDetail.getReqstStatus(), "");
+				logEventService.sendLogEvent(event);
+
+			}
+			
+			
+
+		}
+		
+		if(successFlag) {
+			System.out.println("-----SUCCESS-----");
+			event = new EventVO(serviceName, AckgmConstants.ONE_STATUS,"SUCCESS", "");
+			logEventService.sendLogEvent(event);
+			
 		}
 
 	}
@@ -193,8 +207,48 @@ public class AckgmHdmService {
 
 	}
 
-	private Boolean canceledFlow() {
+	private Boolean canceledFlow(final Long fixedOrderId, MaxTransitResponseVO maxTransitDetail) {
 		System.out.println("Start:: Failed Flow ");
+		EventVO event;
+		
+		List<AfeAckEvEntity> acks = afeAckEvRepository.findAllByFixedOrderId(fixedOrderId);
+
+		if (acks.isEmpty()) {
+			System.out.println("No existe el fixed_order_id: " + fixedOrderId + " en la tabla AFE_ACK_EV");
+			event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
+					"No existe el fixed_order_id: " + fixedOrderId + " en la tabla AFE_ACK_EV", "");
+			logEventService.sendLogEvent(event);
+			return Boolean.FALSE;
+		}
+		
+		if(!acks.get(0).getAckStatus().equalsIgnoreCase(AckgmConstants.FAILED_STATUS)){
+			
+			try {
+				// QUERY7
+				acks.get(0).setAckStatus(maxTransitDetail.getReqstStatus());
+				acks.get(0).setAckMsg(maxTransitDetail.getMesagge().toString());
+				acks.get(0).setUpdateTimeStamp(new Date());
+				afeAckEvRepository.saveAndFlush(acks.get(0));
+			} catch (Exception e) {
+				System.out.println(
+						"Fallo en la ejecución del query de actualización en la tabla AFE_FIXED_ORDERS_EV con el query ");
+				event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
+						"Fallo en la ejecución del query de actualización en la tabla AFE_FIXED_ORDERS_EV con el query ",
+						"");
+				logEventService.sendLogEvent(event);
+				return Boolean.FALSE;
+			}
+			
+		}else {
+			
+			System.out.println("La orden: " + fixedOrderId + " tiene un esatus: "+AckgmConstants.FAILED_STATUS+" NO es posible cancelarla eb la tabla AFE_ACK_EV");
+			event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
+					"La orden: " + fixedOrderId + " tiene un esatus: "+AckgmConstants.FAILED_STATUS+" NO es posible cancelarla en la tabla AFE_ACK_EV", "");
+			logEventService.sendLogEvent(event);
+			return Boolean.FALSE;
+			
+		}
+
 		System.out.println("End:: Failed Flow ");
 
 		return Boolean.TRUE;

@@ -24,7 +24,7 @@ public class AckgmHdmController {
 	public  ResponseEntity<ResponseVO> monitorFiles() {
 		System.out.println(responseMessage);
 		
-		ackgmHdmService.callAckgmHd();
+		ackgmHdmService.callAckgmCheckHd();
 		
 		return new ResponseEntity<>(new ResponseVO(responseMessage, null), HttpStatus.OK);
 	}
