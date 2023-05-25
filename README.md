@@ -1,9 +1,9 @@
 
-# Monitor Microservice  
+# Monitor Ackgm_hdm
 
-This module is a simple **FTP Folder Check**. Its purpose is to review via a scheduller job if **files** are available in a folder in **MFTP Server** and notify to **ms.trasnferfile** of the availability of such file.  
+Its purpose is to review via a scheduller job if **Maxtransit API** provide fixed orders to be validated and set .  
 
-This application exposes 1 single endpoints (as a RESTFul service) that check the health of srevice, once the application has started a shceduller starts running with a customizable parameter of timelapse.  
+Once the application has started a shceduller starts running with a customizable parameter of timelapse.  
 
 
 ## How it works
