@@ -56,7 +56,7 @@ Running the tests
 #### Request
 `GET /olympus/monitor/v1/health`
 
-    curl -i -X GET -H http://{server-domain|ip}/olympus/monitor/health
+    curl -i -X GET -H http://{server-domain|ip}/olympus/ackgmhdm/health
 
 #### Response
     HTTP/1.1 200 OK
