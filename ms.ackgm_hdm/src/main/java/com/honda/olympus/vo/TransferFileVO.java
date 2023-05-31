@@ -1,31 +1,18 @@
 package com.honda.olympus.vo;
 
-public class EventVO {
-	private String source;
+public class TransferFileVO {
+	
 	private Long status;
 
 	private String msg;
 
 	private String file;
 
-	public EventVO() {
+	public TransferFileVO(Long status, String msg, String file) {
 		super();
-	}
-
-	public EventVO(String source, Long status, String msg, String file) {
-		super();
-		this.source = source;
 		this.status = status;
 		this.msg = msg;
 		this.file = file;
-	}
-
-	public String getSource() {
-		return source;
-	}
-
-	public void setSource(String source) {
-		this.source = source;
 	}
 
 	public Long getStatus() {
@@ -54,8 +41,10 @@ public class EventVO {
 
 	@Override
 	public String toString() {
-		return "EventVO [source=" + source + ", status=" + status + ", msg=" + msg + ", file=" + file + "]";
+		return "TransferFileVO [status=" + status + ", msg=" + msg + ", file=" + file + "]";
 	}
+	
+	
 	
 	
 

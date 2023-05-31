@@ -1,19 +1,24 @@
 package com.honda.olympus.vo;
 
-public class ResponseVO {
+public class MessageVO {
+
 	private String source;
+
 	private Long status;
-	private String message;
+
+	private String msg;
+
 	private String file;
 
-	public ResponseVO() {
+	public MessageVO() {
+		super();
 	}
 
-	public ResponseVO(String source, Long status, String message, String file) {
+	public MessageVO(String source, Long status, String msg, String file) {
 		super();
 		this.source = source;
 		this.status = status;
-		this.message = message;
+		this.msg = msg;
 		this.file = file;
 	}
 
@@ -33,12 +38,12 @@ public class ResponseVO {
 		this.status = status;
 	}
 
-	public String getMessage() {
-		return message;
+	public String getMsg() {
+		return msg;
 	}
 
-	public void setMessage(String message) {
-		this.message = message;
+	public void setMsg(String msg) {
+		this.msg = msg;
 	}
 
 	public String getFile() {
@@ -48,5 +53,7 @@ public class ResponseVO {
 	public void setFile(String file) {
 		this.file = file;
 	}
+
+	
 
 }
