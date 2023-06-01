@@ -21,6 +21,9 @@ import com.honda.olympus.vo.EventVO;
 import com.honda.olympus.vo.MaxTransitCallVO;
 import com.honda.olympus.vo.MaxTransitResponseVO;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class AckgmHdmService {
 
@@ -63,7 +66,7 @@ public class AckgmHdmService {
 
 			logEventService.sendLogEvent(new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
 					"La respuesta de MAXTRANSIT no tiene elementos: " + maxTransitData.toString(), ""));
-			System.out.println("MAXTRANSIT empty response");
+			log.info("MAXTRANSIT empty response");
 		}
 
 		// Node 4
@@ -71,7 +74,7 @@ public class AckgmHdmService {
 		while (it.hasNext()) {
 			MaxTransitResponseVO maxTransitDetail = it.next();
 			Long rqstIdentifier = maxTransitDetail.getRqstIdentfr();
-			System.out.println("----rqstIdentifier----:: " + rqstIdentifier);
+			log.info("----rqstIdentifier----:: " + rqstIdentifier);
 
 			if (rqstIdentifier < 0) {
 				logEventService.sendLogEvent(new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
@@ -79,7 +82,7 @@ public class AckgmHdmService {
 								+ " respuesta de MAXTRANSIT: " + maxTransitDetail.toString(),
 						""));
 
-				System.out.println("No tiene un valor mayor o igual a cero reqst_identfr:" + rqstIdentifier);
+				log.info("No tiene un valor mayor o igual a cero reqst_identfr:" + rqstIdentifier);
 				break;
 
 			}
@@ -88,7 +91,7 @@ public class AckgmHdmService {
 			List<AfeFixedOrdersEvEntity> fixedOrders = afeFixedOrdersEvRepository.findAllByRqstId(rqstIdentifier);
 
 			if (fixedOrders.isEmpty()) {
-				System.out.println(
+				log.info(
 						"No se encontro requst_idntfr: " + rqstIdentifier + " en la tabla AFE_FIXED_ORDERS_EV");
 				event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
 						"No se encontro requst_idntfr: " + rqstIdentifier + " en la tabla AFE_FIXED_ORDERS_EV", "");
@@ -101,7 +104,7 @@ public class AckgmHdmService {
 			AfeFixedOrdersEvEntity fixedOrder = fixedOrders.get(0);
 
 			if (AckgmConstants.ACCEPTED_STATUS.equalsIgnoreCase(maxTransitDetail.getReqstStatus())) {
-				System.out.println("Start:: Accepted flow");
+				log.info("Start:: Accepted flow");
 				try {
 					// QUERY2
 					AfeAckEvEntity ackEntity = new AfeAckEvEntity();
@@ -112,7 +115,7 @@ public class AckgmHdmService {
 					ackEntity.setAckRequestTimestamp(new Date());
 					afeAckEvRepository.saveAndFlush(ackEntity);
 				} catch (Exception e) {
-					System.out.println(
+					log.info(
 							"Fallo en la ejecución del query de inserción en la tabla AFE_FIXED_ORDERS_EV con el query ");
 					event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
 							"Fallo en la ejecución del query de inserción en la tabla AFE_FIXED_ORDERS_EV con el query ",
@@ -123,7 +126,7 @@ public class AckgmHdmService {
 
 				if (finalFlow(maxTransitDetail, fixedOrder)) {
 					successFlag = Boolean.TRUE;
-					System.out.println("End:: Accepted flow");
+					log.info("End:: Accepted flow");
 				}
 
 			} else {
@@ -149,8 +152,8 @@ public class AckgmHdmService {
 					}
 				}
 
-				// request_status invaluid
-				System.out.println("El reqst_status no es valido: " + maxTransitDetail.getReqstStatus());
+				// request_status invalid
+				log.info("El reqst_status no es valido: " + maxTransitDetail.getReqstStatus());
 				event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
 						"El reqst_status no es valido: " + maxTransitDetail.getReqstStatus(), "");
 				logEventService.sendLogEvent(event);
@@ -162,7 +165,7 @@ public class AckgmHdmService {
 		}
 		
 		if(successFlag) {
-			System.out.println("-----SUCCESS-----");
+			log.info("-----SUCCESS-----");
 			event = new EventVO(serviceName, AckgmConstants.ONE_STATUS,"SUCCESS", "");
 			logEventService.sendLogEvent(event);
 			
@@ -172,13 +175,13 @@ public class AckgmHdmService {
 
 	private Boolean failedFlow(final Long fixedOrderId, MaxTransitResponseVO maxTransitDetail) {
 		EventVO event;
-		System.out.println("Start:: Failed Flow ");
+		log.info("Start:: Failed Flow ");
 
 		// QUERY6
 		List<AfeAckEvEntity> acks = afeAckEvRepository.findAllByFixedOrderId(fixedOrderId);
 
 		if (acks.isEmpty()) {
-			System.out.println("No existe el fixed_order_id: " + fixedOrderId + " en la tabla AFE_ACK_EV");
+			log.info("No existe el fixed_order_id: " + fixedOrderId + " en la tabla AFE_ACK_EV");
 			event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
 					"No existe el fixed_order_id: " + fixedOrderId + " en la tabla AFE_ACK_EV", "");
 			logEventService.sendLogEvent(event);
@@ -192,7 +195,7 @@ public class AckgmHdmService {
 			acks.get(0).setUpdateTimeStamp(new Date());
 			afeAckEvRepository.saveAndFlush(acks.get(0));
 		} catch (Exception e) {
-			System.out.println(
+			log.info(
 					"Fallo en la ejecución del query de actualización en la tabla AFE_FIXED_ORDERS_EV con el query ");
 			event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
 					"Fallo en la ejecución del query de actualización en la tabla AFE_FIXED_ORDERS_EV con el query ",
@@ -201,20 +204,20 @@ public class AckgmHdmService {
 			return Boolean.FALSE;
 		}
 
-		System.out.println("End:: Failed Flow ");
+		log.info("End:: Failed Flow ");
 
 		return Boolean.TRUE;
 
 	}
 
 	private Boolean canceledFlow(final Long fixedOrderId, MaxTransitResponseVO maxTransitDetail) {
-		System.out.println("Start:: Failed Flow ");
+		log.info("Start:: Failed Flow ");
 		EventVO event;
 		
 		List<AfeAckEvEntity> acks = afeAckEvRepository.findAllByFixedOrderId(fixedOrderId);
 
 		if (acks.isEmpty()) {
-			System.out.println("No existe el fixed_order_id: " + fixedOrderId + " en la tabla AFE_ACK_EV");
+			log.info("No existe el fixed_order_id: " + fixedOrderId + " en la tabla AFE_ACK_EV");
 			event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
 					"No existe el fixed_order_id: " + fixedOrderId + " en la tabla AFE_ACK_EV", "");
 			logEventService.sendLogEvent(event);
@@ -230,7 +233,7 @@ public class AckgmHdmService {
 				acks.get(0).setUpdateTimeStamp(new Date());
 				afeAckEvRepository.saveAndFlush(acks.get(0));
 			} catch (Exception e) {
-				System.out.println(
+				log.info(
 						"Fallo en la ejecución del query de actualización en la tabla AFE_FIXED_ORDERS_EV con el query ");
 				event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
 						"Fallo en la ejecución del query de actualización en la tabla AFE_FIXED_ORDERS_EV con el query ",
@@ -241,7 +244,7 @@ public class AckgmHdmService {
 			
 		}else {
 			
-			System.out.println("La orden: " + fixedOrderId + " tiene un esatus: "+AckgmConstants.FAILED_STATUS+" NO es posible cancelarla eb la tabla AFE_ACK_EV");
+			log.info("La orden: " + fixedOrderId + " tiene un esatus: "+AckgmConstants.FAILED_STATUS+" NO es posible cancelarla eb la tabla AFE_ACK_EV");
 			event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
 					"La orden: " + fixedOrderId + " tiene un esatus: "+AckgmConstants.FAILED_STATUS+" NO es posible cancelarla en la tabla AFE_ACK_EV", "");
 			logEventService.sendLogEvent(event);
@@ -249,7 +252,7 @@ public class AckgmHdmService {
 			
 		}
 
-		System.out.println("End:: Failed Flow ");
+		log.info("End:: Failed Flow ");
 
 		return Boolean.TRUE;
 
@@ -257,7 +260,7 @@ public class AckgmHdmService {
 
 	private Boolean finalFlow(MaxTransitResponseVO maxTransitDetail, AfeFixedOrdersEvEntity fixedOrder) {
 
-		System.out.println("Start:: finalFlow");
+		log.info("Start:: finalFlow");
 		EventVO event;
 		try {
 			// QUERY3
@@ -266,7 +269,7 @@ public class AckgmHdmService {
 			afeFixedOrdersEvRepository.saveAndFlush(fixedOrder);
 
 		} catch (Exception e) {
-			System.out.println("Fallo en la ejecución del query de actualización en la tabla AFE_ACK_EV con el query ");
+			log.info("Fallo en la ejecución del query de actualización en la tabla AFE_ACK_EV con el query ");
 			event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
 					"Fallo en la ejecución del query de inserción en la tabla AFE_ACK_EV con el query ", "");
 			logEventService.sendLogEvent(event);
@@ -276,7 +279,7 @@ public class AckgmHdmService {
 		// QUERY4
 		List<AfeActionEntity> actions = afeActionRepository.findAllByAction(maxTransitDetail.getAction());
 		if (actions.isEmpty()) {
-			System.out.println(
+			log.info(
 					"No se encontro la accion: \"+maxTransitDetail.getAction()+\" en la tabla AFE_ACTION  con el query\"");
 			event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS, "No se encontro la accion: "
 					+ maxTransitDetail.getAction() + " en la tabla AFE_ACTION  con el query", "");
@@ -293,12 +296,12 @@ public class AckgmHdmService {
 			orderHistory.setCreationTimeStamp(new Date());
 			afeOrdersHistoryRepository.save(orderHistory);
 
-			System.out.println("El proceso fue exitoso para la orden: " + fixedOrder.getId());
+			log.info("El proceso fue exitoso para la orden: " + fixedOrder.getId());
 			event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
 					"El proceso fue exitoso para la orden: " + fixedOrder.getId(), "");
 			logEventService.sendLogEvent(event);
 		} catch (Exception e) {
-			System.out.println("Fallo de inserción en la tabla AFE_ORDER_HISOTRY");
+			log.info("Fallo de inserción en la tabla AFE_ORDER_HISOTRY");
 			event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
 					"Fallo de inserción en la tabla AFE_ORDER_HISOTRY con el query ", "");
 			logEventService.sendLogEvent(event);
@@ -306,7 +309,7 @@ public class AckgmHdmService {
 
 		}
 
-		System.out.println("End:: finalFlow");
+		log.info("End:: finalFlow");
 		return Boolean.TRUE;
 
 	}

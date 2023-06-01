@@ -21,6 +21,9 @@ import com.honda.olympus.vo.EventVO;
 import com.honda.olympus.vo.MaxTransitCallVO;
 import com.honda.olympus.vo.MaxTransitResponseVO;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class MaxTransitService {
 
@@ -51,13 +54,13 @@ public class MaxTransitService {
 					HttpMethod.POST, requestEntity, new ParameterizedTypeReference<List<MaxTransitResponseVO>>() {
 					});
 
-			System.out.println("Maxtransit request with Status Code: " + responseEntity.getStatusCode());
+			log.info("Maxtransit request with Status Code: {}",responseEntity.getStatusCode());
 
 			if (!responseEntity.getStatusCode().is2xxSuccessful()) {
 
 				logEventService.sendLogEvent(new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
 						"La API de MAXTRANSIT retorno un error: " + responseEntity.getStatusCode(), ""));
-				System.out.println("Error calling MAXTRANSIT service");
+				log.info("Error calling MAXTRANSIT service");
 			}
 
 			return responseEntity.getBody();
@@ -65,12 +68,12 @@ public class MaxTransitService {
 
 			logEventService.sendLogEvent(new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
 					"Tiempo de espera agotado en la consulta a la API MAXTRANSIT ubicada en: " + timeOut, ""));
-			System.out.println("Error calling MAXTRANSIT service, Timeout");
+			log.info("Error calling MAXTRANSIT service, Timeout");
 
 			return maxTransitResponse;
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("Error calling MAXTRANSIT service");
+			log.info("Error calling MAXTRANSIT service");
 			return maxTransitResponse;
 		}
 

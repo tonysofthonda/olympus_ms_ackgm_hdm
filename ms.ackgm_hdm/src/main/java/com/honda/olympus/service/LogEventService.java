@@ -10,6 +10,9 @@ import org.springframework.web.client.RestTemplate;
 
 import com.honda.olympus.vo.EventVO;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class LogEventService {
 	@Value("${logevent.service.url}")
@@ -17,8 +20,8 @@ public class LogEventService {
 
 	public void sendLogEvent(EventVO message) {
 		try {
-			System.out.println("Calling logEvent service");
-			System.out.println(message.toString());
+			log.info("Calling logEvent service");
+			log.info(message.toString());
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
 			RestTemplate restTemplate = new RestTemplate();
@@ -28,10 +31,10 @@ public class LogEventService {
 			ResponseEntity<String> responseEntity = restTemplate.postForEntity(notificationURI, requestEntity,
 					String.class);
 
-			System.out.println("LogEvent created with Status Code: " + responseEntity.getStatusCode());
-			System.out.println("Message: " + responseEntity.getBody());
+			log.info("LogEvent created with Status Code: {}",responseEntity.getStatusCode());
+			log.info("Message: " + responseEntity.getBody());
 		} catch (Exception e) {
-			System.out.println("Error calling logEvent service "+e.getLocalizedMessage());
+			log.info("Error calling logEvent service {}",e.getLocalizedMessage());
 		}
 
 	}

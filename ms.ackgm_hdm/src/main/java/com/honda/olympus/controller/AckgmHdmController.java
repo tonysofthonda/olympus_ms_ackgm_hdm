@@ -11,22 +11,31 @@ import org.springframework.web.bind.annotation.RestController;
 import com.honda.olympus.service.AckgmHdmService;
 import com.honda.olympus.vo.ResponseVO;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 public class AckgmHdmController {
-	
+
 	@Value("${service.success.message}")
 	private String responseMessage;
-	
+
+	@Value("${service.success.message}")
+	private String successMessage;
+
+	@Value("${service.name}")
+	private String serviceName;
+
 	@Autowired
 	private AckgmHdmService ackgmHdmService;
-	
+
 	@PostMapping(path = "/event", produces = MediaType.APPLICATION_JSON_VALUE)
-	public  ResponseEntity<ResponseVO> monitorFiles() {
-		System.out.println(responseMessage);
-		
+	public ResponseEntity<ResponseVO> monitorFiles() {
+		log.info("Calling FORCE AckgmCheckHd");
+
 		ackgmHdmService.callAckgmCheckHd();
-		
-		return new ResponseEntity<>(new ResponseVO(responseMessage, null), HttpStatus.OK);
+
+		return new ResponseEntity<>(new ResponseVO(serviceName,1L,responseMessage, ""), HttpStatus.OK);
 	}
 
 }

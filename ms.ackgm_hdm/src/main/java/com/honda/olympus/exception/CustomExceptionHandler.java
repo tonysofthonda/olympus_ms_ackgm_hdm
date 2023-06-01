@@ -20,47 +20,50 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import com.honda.olympus.vo.ResponseVO;
 
 @ControllerAdvice
-public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
-
+public class CustomExceptionHandler extends ResponseEntityExceptionHandler{
+	
 	@Value("${service.name}")
 	private String serviceName;
 	
 	@ExceptionHandler(Exception.class)
-	public final ResponseEntity<Object> handleAllExceptions(Exception ex, WebRequest request) {
-
-		List<String> details = new ArrayList<>();
-
-		details.add(ex.getLocalizedMessage());
-		ResponseVO error = new ResponseVO(serviceName,0L,ex.getMessage(), "");
-
-		return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-	}
-
-	@Override
-	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-			HttpHeaders headers, HttpStatus status, WebRequest request) {
-
-		Map<String, Object> responseBody = new LinkedHashMap<String, Object>();
-		responseBody.put("timestamp", new Date());
-		responseBody.put("status", status.value());
-
-		List<String> errors = ex.getBindingResult().getFieldErrors().stream().map(x -> x.getDefaultMessage())
-				.collect(Collectors.toList());
-
-		responseBody.put("errors", errors);
-
-		return new ResponseEntity<>(responseBody, headers, status);
-	}
-	
-	@ExceptionHandler(MonitorException.class)
-	public final ResponseEntity<Object> handleMonitorException(Exception ex, WebRequest request){
+	public final ResponseEntity<Object> handleAllExceptions(Exception ex, WebRequest request){
 		
 		List<String> details = new ArrayList<>();
 		
 		details.add(ex.getLocalizedMessage());
-		ResponseVO error = new ResponseVO(serviceName, 0L,ex.getMessage(), "");
+		ResponseVO error = new ResponseVO(serviceName,0L,"Unknown", "");
 		
 		return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);
 	}
+	
+	@ExceptionHandler(NotificationEmailException.class)
+	public final ResponseEntity<Object> handleNotificationEmail(Exception ex, WebRequest request){
+		
+		List<String> details = new ArrayList<>();
+		
+		details.add(ex.getLocalizedMessage());
+		ResponseVO error = new ResponseVO(serviceName,0L,ex.getMessage(),"");
+		
+		return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	 @Override
+	    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+	            MethodArgumentNotValidException ex,
+	            HttpHeaders headers, HttpStatus status, WebRequest request) {
+	             
+	        Map<String, Object> responseBody = new LinkedHashMap<String, Object>();
+	        responseBody.put("timestamp", new Date());
+	        responseBody.put("status", status.value());
+	         
+	        List<String> errors = ex.getBindingResult().getFieldErrors()
+	            .stream()
+	            .map(x -> x.getDefaultMessage())
+	            .collect(Collectors.toList());
+	         
+	        responseBody.put("errors", errors);
+	         
+	        return new ResponseEntity<>(responseBody, headers, status);
+	    }
 
 }

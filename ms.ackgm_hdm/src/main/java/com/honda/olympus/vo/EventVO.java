@@ -1,5 +1,6 @@
 package com.honda.olympus.vo;
 
+
 public class EventVO {
 	private String source;
 	private Long status;
