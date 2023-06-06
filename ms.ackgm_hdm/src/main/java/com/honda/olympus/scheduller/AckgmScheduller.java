@@ -24,10 +24,9 @@ public class AckgmScheduller {
 
 	@Scheduled(fixedDelayString = "${service.timelapse}")
 	public void monitorScheduledTask() throws IOException {
-		log.info("Ackgm_hdm Scheduller running - " + System.currentTimeMillis() / 1000);
+		log.info("Ackgm_hdm:: Start Scheduller running ");
 
 		try {
-			log.info("Ackgm_hdm:: start");
 			Long startTime = System.nanoTime();
 			
 			ackgmHdmService.callAckgmCheckHd();
@@ -35,11 +34,11 @@ public class AckgmScheduller {
 			Long endTime = System.nanoTime();
 			Long timeElapsed = endTime - startTime;
 
-			log.info("Ackgm_hdm:: end / Execution time in milliseconds: {}", timeElapsed / 1000000);
+			log.info("Ackgm_hdm:: Execution duration in milliseconds: {}", timeElapsed / 1000000);
 
 			Date expireDate = new Date(System.currentTimeMillis() + timeLapse);
 
-			log.info("Next ackgm_hdm execution at: {}",expireDate.toString());
+			log.info("Ackgm_hdm:: End, Next ackgm_hdm execution at: {}",expireDate.toString());
 		} catch (Exception e) {
 
 			e.printStackTrace();

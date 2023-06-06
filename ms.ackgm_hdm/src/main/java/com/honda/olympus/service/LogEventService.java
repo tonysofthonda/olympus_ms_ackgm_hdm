@@ -20,8 +20,8 @@ public class LogEventService {
 
 	public void sendLogEvent(EventVO message) {
 		try {
-			log.info("Calling logEvent service");
-			log.info(message.toString());
+			log.debug("Ackgm_hdm:: Calling logEvent service");
+			log.debug(message.toString());
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
 			RestTemplate restTemplate = new RestTemplate();
@@ -31,10 +31,10 @@ public class LogEventService {
 			ResponseEntity<String> responseEntity = restTemplate.postForEntity(notificationURI, requestEntity,
 					String.class);
 
-			log.info("LogEvent created with Status Code: {}",responseEntity.getStatusCode());
-			log.info("Message: " + responseEntity.getBody());
+			log.debug("Ackgm_hdm:: LogEvent created with Status Code: {}",responseEntity.getStatusCode());
+			log.debug("Message: " + responseEntity.getBody());
 		} catch (Exception e) {
-			log.info("Error calling logEvent service {}",e.getLocalizedMessage());
+			log.info("Ackgm_hdm:: Error calling logEvent service {}",e.getLocalizedMessage());
 		}
 
 	}

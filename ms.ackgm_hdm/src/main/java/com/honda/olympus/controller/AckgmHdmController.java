@@ -31,9 +31,11 @@ public class AckgmHdmController {
 
 	@PostMapping(path = "/event", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseVO> monitorFiles() {
-		log.info("Calling FORCE AckgmCheckHd");
+		log.info("Ackgm_hdm:: Calling FORCE AckgmCheckHd:: Start");
 
 		ackgmHdmService.callAckgmCheckHd();
+		
+		log.info("Ackgm_hdm:: Calling FORCE AckgmCheckHd:: End");
 
 		return new ResponseEntity<>(new ResponseVO(serviceName,1L,responseMessage, ""), HttpStatus.OK);
 	}

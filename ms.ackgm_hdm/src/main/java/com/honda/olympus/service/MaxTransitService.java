@@ -54,13 +54,13 @@ public class MaxTransitService {
 					HttpMethod.POST, requestEntity, new ParameterizedTypeReference<List<MaxTransitResponseVO>>() {
 					});
 
-			log.info("Maxtransit request with Status Code: {}",responseEntity.getStatusCode());
+			log.debug("Maxtransit request with Status Code: {}",responseEntity.getStatusCode());
 
 			if (!responseEntity.getStatusCode().is2xxSuccessful()) {
 
 				logEventService.sendLogEvent(new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
 						"La API de MAXTRANSIT retorno un error: " + responseEntity.getStatusCode(), ""));
-				log.info("Error calling MAXTRANSIT service");
+				log.debug("Error calling MAXTRANSIT service");
 			}
 
 			return responseEntity.getBody();
@@ -68,12 +68,11 @@ public class MaxTransitService {
 
 			logEventService.sendLogEvent(new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
 					"Tiempo de espera agotado en la consulta a la API MAXTRANSIT ubicada en: " + timeOut, ""));
-			log.info("Error calling MAXTRANSIT service, Timeout");
+			log.debug("Ackgm_hdm:: Error calling MAXTRANSIT service, Timeout");
 
 			return maxTransitResponse;
 		} catch (Exception e) {
-			e.printStackTrace();
-			log.info("Error calling MAXTRANSIT service");
+			log.info("Ackgm_hdm:: Error calling MAXTRANSIT service");
 			return maxTransitResponse;
 		}
 
