@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -111,7 +112,10 @@ public class AckgmHdmService {
 
 					ackEntity.setFixedOrderId(fixedOrder.getId());
 					ackEntity.setAckStatus(maxTransitDetail.getReqstStatus());
-					ackEntity.setAckMsg(maxTransitDetail.getMesagge().toString());
+
+					JSONArray jsArray = new JSONArray(maxTransitDetail.getMesagge());
+					
+					ackEntity.setAckMsg(jsArray.toString());
 					ackEntity.setAckRequestTimestamp(new Date());
 					afeAckEvRepository.saveAndFlush(ackEntity);
 				} catch (Exception e) {
@@ -191,7 +195,10 @@ public class AckgmHdmService {
 		try {
 			// QUERY7
 			acks.get(0).setAckStatus(maxTransitDetail.getReqstStatus());
-			acks.get(0).setAckMsg(maxTransitDetail.getMesagge().toString());
+			
+			JSONArray jsArray = new JSONArray(maxTransitDetail.getMesagge());
+			
+			acks.get(0).setAckMsg(jsArray.toString());
 			acks.get(0).setUpdateTimeStamp(new Date());
 			afeAckEvRepository.saveAndFlush(acks.get(0));
 		} catch (Exception e) {
@@ -229,7 +236,10 @@ public class AckgmHdmService {
 			try {
 				// QUERY7
 				acks.get(0).setAckStatus(maxTransitDetail.getReqstStatus());
-				acks.get(0).setAckMsg(maxTransitDetail.getMesagge().toString());
+				
+				JSONArray jsArray = new JSONArray(maxTransitDetail.getMesagge());
+				
+				acks.get(0).setAckMsg(jsArray.toString());
 				acks.get(0).setUpdateTimeStamp(new Date());
 				afeAckEvRepository.saveAndFlush(acks.get(0));
 			} catch (Exception e) {
