@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.honda.olympus.service.AckgmHdmService;
 import com.honda.olympus.vo.ResponseVO;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -29,6 +30,7 @@ public class AckgmHdmController {
 	@Autowired
 	private AckgmHdmService ackgmHdmService;
 
+	@Operation(summary = "Force AckgmCheckHd processing once")
 	@PostMapping(path = "/event", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseVO> monitorFiles() {
 		log.info("Ackgm_hdm:: Calling FORCE AckgmCheckHd:: Start");

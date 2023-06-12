@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+
 @RestController
 public class HealthCheckController {
 
@@ -22,7 +24,7 @@ public class HealthCheckController {
 	@Value("${service.profile}")
 	private String profile;
 	
-	
+	@Operation(summary = "Test service availability and version")
 	@GetMapping("/health")
 	public ResponseEntity<String> healthCheck() 
 	{

@@ -59,7 +59,7 @@ public class MaxTransitService {
 			if (!responseEntity.getStatusCode().is2xxSuccessful()) {
 
 				logEventService.sendLogEvent(new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
-						"La API de MAXTRANSIT retorno un error: " + responseEntity.getStatusCode(), ""));
+						"La API de MAXTRANSIT retornó un error: " + responseEntity.getStatusCode(), ""));
 				log.debug("Error calling MAXTRANSIT service");
 			}
 
