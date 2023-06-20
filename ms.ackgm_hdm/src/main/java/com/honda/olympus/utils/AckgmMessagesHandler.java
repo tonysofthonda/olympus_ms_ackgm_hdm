@@ -50,7 +50,7 @@ public class AckgmMessagesHandler {
 		sendAndLog();
 	}
 
-	public void createAndLogMessage(Long rqstIdentifier, MaxTransitResponseVO maxTransitDetail) {
+	public void createAndLogMessage(String rqstIdentifier, MaxTransitResponseVO maxTransitDetail) {
 
 		this.message = String.format(MAJOR_EQUAL_VALIDATION, rqstIdentifier, maxTransitDetail.toString());
 		this.event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS, message, "");

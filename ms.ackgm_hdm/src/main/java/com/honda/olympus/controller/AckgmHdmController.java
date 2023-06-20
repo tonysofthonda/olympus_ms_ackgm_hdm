@@ -1,5 +1,7 @@
 package com.honda.olympus.controller;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -29,13 +31,18 @@ public class AckgmHdmController {
 
 	@Autowired
 	private AckgmHdmService ackgmHdmService;
+	
+	@Autowired
+	private HttpServletRequest request;
 
 	@Operation(summary = "Force AckgmCheckHd processing once")
 	@PostMapping(path = "/event", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseVO> monitorFiles() {
 		log.info("Ackgm_hdm:: Calling FORCE AckgmCheckHd:: Start");
 
-		ackgmHdmService.callAckgmCheckHd();
+		String ipAddress = request.getRemoteAddr();
+		
+		ackgmHdmService.callAckgmCheckHd(ipAddress);
 		
 		log.info("Ackgm_hdm:: Calling FORCE AckgmCheckHd:: End");
 

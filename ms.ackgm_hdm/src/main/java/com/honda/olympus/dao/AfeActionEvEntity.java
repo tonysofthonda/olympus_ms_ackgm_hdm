@@ -13,14 +13,14 @@ import javax.persistence.TemporalType;
 
 @Entity
 @Table(name = "afe_action_ev", schema = "afedb")
-public class AfeActionEntity {
+public class AfeActionEvEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private Long id;
 
-	@Column(name = "action")
+	@Column(name = "action", length = 8)
 	private String action;
 
 	@Temporal(TemporalType.TIMESTAMP)
@@ -31,7 +31,13 @@ public class AfeActionEntity {
 	@Column(name = "update_timestamp")
 	Date updateTimeStamp;
 
-	public AfeActionEntity() {
+	@Column(name = "obs")
+	private String obs;
+
+	@Column(name = "bstate")
+	private Character bstate;
+
+	public AfeActionEvEntity() {
 		super();
 	}
 
@@ -65,6 +71,22 @@ public class AfeActionEntity {
 
 	public void setUpdateTimeStamp(Date updateTimeStamp) {
 		this.updateTimeStamp = updateTimeStamp;
+	}
+
+	public String getObs() {
+		return obs;
+	}
+
+	public void setObs(String obs) {
+		this.obs = obs;
+	}
+
+	public Character getBstate() {
+		return bstate;
+	}
+
+	public void setBstate(Character bstate) {
+		this.bstate = bstate;
 	}
 
 }

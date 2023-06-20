@@ -10,7 +10,7 @@ public class MaxTransitResponseVO {
 	private List<String> mesagge;
 	private String voLastChgTimestamp;
 
-	private Long rqstIdentfr;
+	private String rqstIdentfr;
 
 	private String modelYearNbr;
 	private String sellingSrcCd;
@@ -61,10 +61,10 @@ public class MaxTransitResponseVO {
 	public void setVoLastChgTimestamp(String voLastChgTimestamp) {
 		this.voLastChgTimestamp = voLastChgTimestamp;
 	}
-	public Long getRqstIdentfr() {
+	public String getRqstIdentfr() {
 		return rqstIdentfr;
 	}
-	public void setRqstIdentfr(Long rqstIdentfr) {
+	public void setRqstIdentfr(String rqstIdentfr) {
 		this.rqstIdentfr = rqstIdentfr;
 	}
 	public String getModelYearNbr() {

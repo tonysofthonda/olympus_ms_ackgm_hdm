@@ -20,64 +20,82 @@ public class AfeFixedOrdersEvEntity {
 	@Column(name = "id")
 	private Long id;
 
-	@Column(name = "envio_flag")
-	private Boolean envioFlag;
-
-	@Column(name = "order_number")
-	private String orderNumber;
-
-	@Column(name = "selling_code")
-	private String sellingCode;
-
-	@Column(name = "origin_type")
-	private String originType;
-
-	@Column(name = "extern_config_id")
-	private String externConfigId;
-
-	@Column(name = "order_type")
-	private String orderType;
-
-	@Column(name = "chrg_asct")
-	private String chrgAsct;
-
-	@Column(name = "chrg_fcm")
-	private String chrgFcm;
-
-	@Column(name = "ship_sct")
-	private String shipSct;
-
-	@Column(name = "ship_fcm")
-	private String shipFcm;
-
-	@Column(name = "request_id")
-	private Long requestId;
-
-	@Column(name = "start_day")
-	private String startDay;
-
-	@Column(name = "due_date")
-	private String dueDate;
-
-	@Column(name = "ack_id")
-	private String ackId;
-
-	@Column(name = "status_ev_id")
-	private String statusEvId;
-
-	@Column(name = "action_id")
+	@Column(name = "envio_Flag_Gm")
+	private Boolean envioFlagGm;
+	
+	@Column(name = "action_Id")
 	private Long actionId;
 
-	@Column(name = "model_color_id")
+	@Column(name = "model_Color_Id")
 	private Long modelColorId;
 	
+	@Column(name = "order_Number",length = 6)
+	private String orderNumber;
+
+	@Column(name = "selling_Code",length = 2)
+	private String sellingCode;
+
+	@Column(name = "origin_Type",length = 8)
+	private String originType;
+
+	@Column(name = "extern_Config_Id",length = 32)
+	private String externConfigId;
+
+	@Column(name = "order_Type",length = 3)
+	private String orderType;
+
+	@Column(name = "chrg_Asct")
+	private Long chrgAsct;
+
+	@Column(name = "chrg_Fcn")
+	private Long chrgFcn;
+
+	@Column(name = "ship_Sct")
+	private Long shipSct;
+
+	@Column(name = "ship_Fcn")
+	private Long shipFcn;
+
+	@Column(name = "request_Id",length = 40)
+	private String requestId;
+
+	@Column(name = "vin_Number",length = 17)
+	private String vinNumber;
+	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "create_timestamp")
+	@Column(name = "prod_Week_Start_Day")
+	Date prodWeekStartDay;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "ord_Due_Dt")
+	Date ordDueDt;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "create_Ord_Timestamp")
+	Date createOrdTimestamp;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "cancel_Ord_Timestamp")
+	Date cancelOrdTimestamp;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "change_Ord_Timestamp")
+	Date changeOrdTimestamp;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "create_Timestamp")
 	Date creationTimeStamp;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "update_timestamp")
+	@Column(name = "update_Timestamp")
 	Date updateTimeStamp;
+	
+	
+	@Column(name = "obs")
+	private String obs;
+
+	@Column(name = "bstate")
+	private Integer bstate;
 
 	public AfeFixedOrdersEvEntity() {
 	}
@@ -90,12 +108,28 @@ public class AfeFixedOrdersEvEntity {
 		this.id = id;
 	}
 
-	public Boolean getEnvioFlag() {
-		return envioFlag;
+	public Boolean getEnvioFlagGm() {
+		return envioFlagGm;
 	}
 
-	public void setEnvioFlag(Boolean envioFlag) {
-		this.envioFlag = envioFlag;
+	public void setEnvioFlagGm(Boolean envioFlagGm) {
+		this.envioFlagGm = envioFlagGm;
+	}
+
+	public Long getActionId() {
+		return actionId;
+	}
+
+	public void setActionId(Long actionId) {
+		this.actionId = actionId;
+	}
+
+	public Long getModelColorId() {
+		return modelColorId;
+	}
+
+	public void setModelColorId(Long modelColorId) {
+		this.modelColorId = modelColorId;
 	}
 
 	public String getOrderNumber() {
@@ -138,92 +172,92 @@ public class AfeFixedOrdersEvEntity {
 		this.orderType = orderType;
 	}
 
-	public String getChrgAsct() {
+	public Long getChrgAsct() {
 		return chrgAsct;
 	}
 
-	public void setChrgAsct(String chrgAsct) {
+	public void setChrgAsct(Long chrgAsct) {
 		this.chrgAsct = chrgAsct;
 	}
 
-	public String getChrgFcm() {
-		return chrgFcm;
+	public Long getChrgFcn() {
+		return chrgFcn;
 	}
 
-	public void setChrgFcm(String chrgFcm) {
-		this.chrgFcm = chrgFcm;
+	public void setChrgFcn(Long chrgFcn) {
+		this.chrgFcn = chrgFcn;
 	}
 
-	public String getShipSct() {
+	public Long getShipSct() {
 		return shipSct;
 	}
 
-	public void setShipSct(String shipSct) {
+	public void setShipSct(Long shipSct) {
 		this.shipSct = shipSct;
 	}
 
-	public String getShipFcm() {
-		return shipFcm;
+	public Long getShipFcn() {
+		return shipFcn;
 	}
 
-	public void setShipFcm(String shipFcm) {
-		this.shipFcm = shipFcm;
+	public void setShipFcn(Long shipFcn) {
+		this.shipFcn = shipFcn;
 	}
 
-	public Long getRequestId() {
+	public String getRequestId() {
 		return requestId;
 	}
 
-	public void setRequestId(Long requestId) {
+	public void setRequestId(String requestId) {
 		this.requestId = requestId;
 	}
 
-	public String getStartDay() {
-		return startDay;
+	public String getVinNumber() {
+		return vinNumber;
 	}
 
-	public void setStartDay(String startDay) {
-		this.startDay = startDay;
+	public void setVinNumber(String vinNumber) {
+		this.vinNumber = vinNumber;
 	}
 
-	public String getDueDate() {
-		return dueDate;
+	public Date getProdWeekStartDay() {
+		return prodWeekStartDay;
 	}
 
-	public void setDueDate(String dueDate) {
-		this.dueDate = dueDate;
+	public void setProdWeekStartDay(Date prodWeekStartDay) {
+		this.prodWeekStartDay = prodWeekStartDay;
 	}
 
-	public String getAckId() {
-		return ackId;
+	public Date getOrdDueDt() {
+		return ordDueDt;
 	}
 
-	public void setAckId(String ackId) {
-		this.ackId = ackId;
+	public void setOrdDueDt(Date ordDueDt) {
+		this.ordDueDt = ordDueDt;
 	}
 
-	public String getStatusEvId() {
-		return statusEvId;
+	public Date getCreateOrdTimestamp() {
+		return createOrdTimestamp;
 	}
 
-	public void setStatusEvId(String statusEvId) {
-		this.statusEvId = statusEvId;
+	public void setCreateOrdTimestamp(Date createOrdTimestamp) {
+		this.createOrdTimestamp = createOrdTimestamp;
 	}
 
-	public Long getActionId() {
-		return actionId;
+	public Date getCancelOrdTimestamp() {
+		return cancelOrdTimestamp;
 	}
 
-	public void setActionId(Long actionId) {
-		this.actionId = actionId;
+	public void setCancelOrdTimestamp(Date cancelOrdTimestamp) {
+		this.cancelOrdTimestamp = cancelOrdTimestamp;
 	}
 
-	public Long getModelColorId() {
-		return modelColorId;
+	public Date getChangeOrdTimestamp() {
+		return changeOrdTimestamp;
 	}
 
-	public void setModelColorId(Long modelColorId) {
-		this.modelColorId = modelColorId;
+	public void setChangeOrdTimestamp(Date changeOrdTimestamp) {
+		this.changeOrdTimestamp = changeOrdTimestamp;
 	}
 
 	public Date getCreationTimeStamp() {
@@ -241,7 +275,21 @@ public class AfeFixedOrdersEvEntity {
 	public void setUpdateTimeStamp(Date updateTimeStamp) {
 		this.updateTimeStamp = updateTimeStamp;
 	}
-	
-	
 
+	public String getObs() {
+		return obs;
+	}
+
+	public void setObs(String obs) {
+		this.obs = obs;
+	}
+
+	public Integer getBstate() {
+		return bstate;
+	}
+
+	public void setBstate(Integer bstate) {
+		this.bstate = bstate;
+	}
+	
 }

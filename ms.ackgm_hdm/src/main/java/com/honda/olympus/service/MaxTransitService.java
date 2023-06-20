@@ -67,7 +67,7 @@ public class MaxTransitService {
 		} catch (ResourceAccessException r) {
 
 			logEventService.sendLogEvent(new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
-					"Tiempo de espera agotado en la consulta a la API MAXTRANSIT ubicada en: " + timeOut, ""));
+					"Tiempo de espera agotado en la consulta a la API MAXTRANSIT ubicada en: " + maxTRansitURI, ""));
 			log.debug("Ackgm_hdm:: Error calling MAXTRANSIT service, Timeout");
 
 			return maxTransitResponse;
