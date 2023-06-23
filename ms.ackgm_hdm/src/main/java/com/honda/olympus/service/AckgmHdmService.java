@@ -77,10 +77,10 @@ public class AckgmHdmService {
 		while (it.hasNext()) {
 
 			MaxTransitResponseVO maxTransitDetail = it.next();
-			String rqstIdentifierMxtrs = maxTransitDetail.getRqstIdentfr();
+			String rqstIdentifierMxtrs = maxTransitDetail.getRqst_identfr().trim();
 			String actionMxtrs = maxTransitDetail.getAction();
 
-			log.debug("----action----:: " + rqstIdentifierMxtrs);
+			log.debug("AckgmHdm:: ----action----:: {}",rqstIdentifierMxtrs);
 
 			if (rqstIdentifierMxtrs.length() < 0) {
 
@@ -88,6 +88,7 @@ public class AckgmHdmService {
 				break;
 			}
 
+			//Create Flow
 			if (AckgmConstants.CREATE_STATUS.equalsIgnoreCase(actionMxtrs)) {
 				log.debug("Start:: Create flow");
 
@@ -97,13 +98,11 @@ public class AckgmHdmService {
 
 				if (fixedOrders.isEmpty()) {
 
-					ackgmMessagesHandler.createAndLogMessage(rqstIdentifierMxtrs);
+					ackgmMessagesHandler.createAndLogMessageNoRqstIdtfr(rqstIdentifierMxtrs, "SELECT * FROM AFE_FIXED_ORDERS_EV WHERE REQST_IDENTFR");
 					break;
 				}
 
 				AfeFixedOrdersEvEntity fixedOrder = fixedOrders.get(0);
-
-				
 
 				if (finalFlow(maxTransitDetail, fixedOrder)) {
 					successFlag = Boolean.TRUE;
@@ -227,11 +226,11 @@ public class AckgmHdmService {
 
 		log.debug("Start:: finalFlow");
 		EventVO event;
+		
 		Long fixedOrderIdQ1 = fixedOrder.getId();
 		Long modelColorIdQ1 = fixedOrder.getModelColorId();
 		String requstIdQ1 = fixedOrder.getRequestId();
 		Boolean envioFlagQ1 = fixedOrder.getEnvioFlagGm();
-		
 		String actionMxtrsp = maxTransitDetail.getAction();
 
 		// QUERY2
@@ -242,20 +241,22 @@ public class AckgmHdmService {
 			return Boolean.FALSE;
 		}
 		
-		Long actionIdq2 = actions.get(0).getId();
+		Long actionIdQ2 = actions.get(0).getId();
 
 		// QUERY3
 		AfeOrdersActionHistoryEntity orderHistory = new AfeOrdersActionHistoryEntity();
 
 		try {
-			orderHistory.setActionId(actionIdq2);
+			orderHistory.setActionId(actionIdQ2);
 			orderHistory.setFixedOrderId(fixedOrderIdQ1);
 			orderHistory.setModelColorId(modelColorIdQ1);
 			orderHistory.setEnvioFlagGm(envioFlagQ1);
 			
+			orderHistory.setCreationTimeStamp(new Date());
 			orderHistory.setObs(
 					String.format("Client IP: %s , TimeStamp: %s", this.ipAddress, AckgmUtils.getTimeStamp()));
 			orderHistory.setBstate(1);
+			
 			afeOrdersHistoryRepository.save(orderHistory);
 
 			ackgmMessagesHandler.createAndLogMessageSuccessAction(maxTransitDetail);

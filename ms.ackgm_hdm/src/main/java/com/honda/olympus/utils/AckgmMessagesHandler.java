@@ -25,14 +25,14 @@ public class AckgmMessagesHandler {
 
 	private static final String MAJOR_EQUAL_VALIDATION = "No tiene un valor mayor o igual a cero reqst_identfr: %s, respuesta de MAXTRANSIT: %s ";
 	private static final String MAX_TRANSIT_VALIDATION = "La respuesta de MAXTRANSIT no tiene elementos: %s ";
-	private static final String REQUST_IDTFR_VALIDATION = "No se encontró requst_idntfr: %s en la tabla AFE_FIXED_ORDERS_EV";
+	private static final String REQUST_IDTFR_VALIDATION = "No se encontró reqst_idntfr: %s en la tabla AFE_FIXED_ORDERS_EV con el query: %s";
 	private static final String QUERY_VALIDATION = 	"Fallo en la ejecución del query de inserción en la tabla AFE_FIXED_ORDERS_EV con el query: %s ";
 	private static final String STATUS_VALIDATION = "El reqst_status no es valido: %s";
 	private static final String FIXED_ORDER_NO_EXIST_ACK = "No existe el fixed_order_id: %s en la tabla AFE_ACK_EV";
 	private static final String QUERY_EXECUTION_FAIL = "Fallo en la ejecución del query de actualización en la tabla AFE_FIXED_ORDERS_EV con el query: %s";
 	private static final String NO_CANCEL_FAIL = "La orden: %s tiene un esatus: %s NO es posible cancelarla en la tabla AFE_ACK_EV ";
 	private static final String QUERY_UPDATE_ACK_FAIL = "Fallo en la ejecución del query de actualización en la tabla AFE_ACK_EV con el query: %s";
-	private static final String QUERY_UPDATE_ACTION_FAIL = "No se encontró la acción: %s en la tabla AFE_ACTION  con el query: %s";	
+	private static final String QUERY_UPDATE_ACTION_FAIL = "NO EXISTE la acción: %s en la tabla AFE_ACTION  con el query: %s";	
 	private static final String ACTION_SUCCESS = "El proceso fué realizado con éxito para la orden: %s y estatus: %s";
 	private static final String ORDER_HISTORY_FAIL = "Fallo de inserción en la tabla AFE_ORDER_HISOTRY con el query: %s";
 	
@@ -58,9 +58,9 @@ public class AckgmMessagesHandler {
 		sendAndLog();
 	}
 
-	public void createAndLogMessage(Long rqstIdentifier) {
+	public void createAndLogMessageNoRqstIdtfr(String rqstIdentifier,String query) {
 
-		this.message = String.format(REQUST_IDTFR_VALIDATION, rqstIdentifier);
+		this.message = String.format(REQUST_IDTFR_VALIDATION, rqstIdentifier,query);
 		this.event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS, message, "");
 
 		sendAndLog();

@@ -17,33 +17,33 @@ public class AfeOrdersActionHistoryEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id")
+	@Column(name = "\"id\"")
 	private Long id;
 	
-	@Column(name = "action_Id")
+	@Column(name = "\"action_Id\"")
 	private Long actionId;
 	
-	@Column(name = "fixed_Order_Id")
+	@Column(name = "\"fixed_Order_Id\"")
 	private Long fixedOrderId;
 	
-	@Column(name = "model_Color_Id")
+	@Column(name = "\"model_Color_Id\"")
 	private Long modelColorId;
 	
-	@Column(name = "envio_Flag_Gm")
+	@Column(name = "\"envio_Flag_Gm\"")
 	private Boolean envioFlagGm;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "create_Timestamp")
+	@Column(name = "\"create_Timestamp\"")
 	Date creationTimeStamp;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "update_Timestamp")
+	@Column(name = "\"update_timestamp\"")
 	Date updateTimeStamp;
 	
-	@Column(name = "obs")
+	@Column(name = "\"obs\"")
 	private String obs;
 
-	@Column(name = "bstate")
+	@Column(name = "\"bstate\"")
 	private Integer bstate;
 
 	public AfeOrdersActionHistoryEntity() {

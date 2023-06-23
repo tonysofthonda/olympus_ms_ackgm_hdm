@@ -17,24 +17,24 @@ public class AfeActionEvEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id")
+	@Column(name = "\"id\"")
 	private Long id;
 
-	@Column(name = "action", length = 8)
+	@Column(name = "\"action\"", length = 8)
 	private String action;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "create_timestamp")
+	@Column(name = "\"create_Timestamp\"")
 	Date creationTimeStamp;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "update_timestamp")
+	@Column(name = "\"update_timestamp\"")
 	Date updateTimeStamp;
 
-	@Column(name = "obs")
+	@Column(name = "\"obs\"")
 	private String obs;
 
-	@Column(name = "bstate")
+	@Column(name = "\"bstate\"")
 	private Character bstate;
 
 	public AfeActionEvEntity() {

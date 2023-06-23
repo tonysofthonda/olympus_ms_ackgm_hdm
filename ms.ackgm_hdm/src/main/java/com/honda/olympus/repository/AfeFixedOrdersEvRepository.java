@@ -12,7 +12,7 @@ import com.honda.olympus.dao.AfeFixedOrdersEvEntity;
 @Repository
 public interface AfeFixedOrdersEvRepository extends JpaRepository<AfeFixedOrdersEvEntity, Long> {
 
-	// QUERY1
-	@Query("SELECT o FROM AfeFixedOrdersEvEntity o WHERE o.requestId = :requestId ")
-	List<AfeFixedOrdersEvEntity> findAllByRqstId(@Param("requestId") String requestId);
+	//QUERY1
+	@Query("SELECT o FROM AfeFixedOrdersEvEntity o WHERE o.requestId = :requestIdtfr ")
+	List<AfeFixedOrdersEvEntity> findAllByRqstId(@Param("requestIdtfr") String requestIdtfr);
 }
