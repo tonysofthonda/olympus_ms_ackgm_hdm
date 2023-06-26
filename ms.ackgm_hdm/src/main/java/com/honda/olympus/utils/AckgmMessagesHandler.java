@@ -34,7 +34,12 @@ public class AckgmMessagesHandler {
 	private static final String QUERY_UPDATE_ACK_FAIL = "Fallo en la ejecución del query de actualización en la tabla AFE_ACK_EV con el query: %s";
 	private static final String QUERY_UPDATE_ACTION_FAIL = "NO EXISTE la acción: %s en la tabla AFE_ACTION  con el query: %s";	
 	private static final String ACTION_SUCCESS = "El proceso fué realizado con éxito para la orden: %s y estatus: %s";
-	private static final String ORDER_HISTORY_FAIL = "Fallo de inserción en la tabla AFE_ORDER_HISOTRY con el query: %s";
+	private static final String ORDER_HISTORY_FAIL = "Fallo en la jecución de inserción de la tabla AFE_ORDER_HISOTRY con el query: %s";
+	private static final String ORDER_ACK_MESSAGE_FAIL = "Fallo en la jecución de inserción de la tabla AFE_ACK_MESSAGE con el query: %s";
+	private static final String ORDER_ACK_MESSAGE_ALTERN_INSERT = "El registro: %s y %s tuvo un estatus de %s con la acción: %s";
+	private static final String FIXED_ORDER_NOT_FOUN_ORDR_NBMR = "No se encontró EL reqst_idntfr: %s y el order_number: %s en la tabla AFE_FIXED_ORDERS_EV con el query: %s";
+	private static final String INSERT_SUCCESS = "Actualización exitosa del registro: %s y el order_number: %s en la tabla AFE_FIXED_ORDERS_EV";
+	
 	
 	
 	
@@ -78,7 +83,7 @@ public class AckgmMessagesHandler {
 	
 	public void createAndLogMessage(MaxTransitResponseVO maxTransitDetail) {
 
-		this.message = String.format(STATUS_VALIDATION, maxTransitDetail.getReqstStatus());
+		this.message = String.format(STATUS_VALIDATION, maxTransitDetail.getReqst_status());
 		this.event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS, message, "");
 
 		sendAndLog();
@@ -111,7 +116,7 @@ public class AckgmMessagesHandler {
 	
 	public void createAndLogMessageNoCancelOrder(Long fixedOrderId) {
 
-		this.message = String.format(NO_CANCEL_FAIL, fixedOrderId,AckgmConstants.FAILED_STATUS);
+		this.message = String.format(NO_CANCEL_FAIL, fixedOrderId,AckgmConstants.CENCELED_STATUS);
 		this.event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS, message, "");
 
 		sendAndLog();
@@ -136,7 +141,7 @@ public class AckgmMessagesHandler {
 	
 	public void createAndLogMessageSuccessAction(MaxTransitResponseVO maxTransitDetail) {
 
-		this.message = String.format(ACTION_SUCCESS,maxTransitDetail.getRqstIdentfr(),maxTransitDetail.getReqstStatus());
+		this.message = String.format(ACTION_SUCCESS,maxTransitDetail.getRqst_identfr(),maxTransitDetail.getReqst_status());
 		this.event = new EventVO(serviceName, AckgmConstants.ONE_STATUS, message, "");
 
 		sendAndLog();
@@ -149,6 +154,41 @@ public class AckgmMessagesHandler {
 
 		sendAndLog();
 	}
+	
+	public void createAfeAckMessageFail(String query) {
+
+		this.message = String.format(ORDER_ACK_MESSAGE_FAIL,query);
+		this.event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS, message, "");
+
+		sendAndLog();
+	}
+	
+	public void createAfeAckMessageAlternInsert(String reqstIdtfr, String orderNbr,String reqstStatus,String action) {
+
+		this.message = String.format(ORDER_ACK_MESSAGE_ALTERN_INSERT,reqstIdtfr,orderNbr,reqstStatus,action);
+		this.event = new EventVO(serviceName, AckgmConstants.ONE_STATUS, message, "");
+
+		sendAndLog();
+	}
+	
+	public void createAfeAckMessageNoFixedOrderByOrdNmbr(String reqstIdtfr, String orderNbr,String query) {
+
+		this.message = String.format(FIXED_ORDER_NOT_FOUN_ORDR_NBMR,reqstIdtfr,orderNbr,query);
+		this.event = new EventVO(serviceName, AckgmConstants.ONE_STATUS, message, "");
+
+		sendAndLog();
+	}
+	
+	public void createAfeAckMessageInsertSuccess(String reqstIdtfr, String orderNbr) {
+
+		this.message = String.format(INSERT_SUCCESS,reqstIdtfr,orderNbr);
+		this.event = new EventVO(serviceName, AckgmConstants.ONE_STATUS, message, "");
+
+		sendAndLog();
+	}
+	
+	
+	
 
 	private void sendAndLog() {
 		logEventService.sendLogEvent(this.event);

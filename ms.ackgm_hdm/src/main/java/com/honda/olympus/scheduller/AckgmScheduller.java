@@ -29,7 +29,7 @@ public class AckgmScheduller {
 		try {
 			Long startTime = System.nanoTime();
 			
-			ackgmHdmService.callAckgmCheckHd();
+			ackgmHdmService.callAckgmCheckHd("Scheduller");
 
 			Long endTime = System.nanoTime();
 			Long timeElapsed = endTime - startTime;

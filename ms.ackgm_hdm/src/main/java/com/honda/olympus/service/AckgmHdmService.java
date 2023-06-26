@@ -10,20 +10,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.honda.olympus.dao.AfeAckEvEntity;
-import com.honda.olympus.dao.AfeActionEntity;
+import com.honda.olympus.dao.AfeAckMsgEntity;
 import com.honda.olympus.dao.AfeActionEvEntity;
 import com.honda.olympus.dao.AfeFixedOrdersEvEntity;
 import com.honda.olympus.dao.AfeOrdersActionHistoryEntity;
-import com.honda.olympus.dao.AfeOrdersHistoryEntity;
-import com.honda.olympus.repository.AfeAckEvRepository;
+import com.honda.olympus.repository.AfeAckMsgEvRepository;
 import com.honda.olympus.repository.AfeActionRepository;
 import com.honda.olympus.repository.AfeFixedOrdersEvRepository;
 import com.honda.olympus.repository.AfeOrdersActionHistoryRepository;
 import com.honda.olympus.utils.AckgmConstants;
 import com.honda.olympus.utils.AckgmMessagesHandler;
 import com.honda.olympus.utils.AckgmUtils;
-import com.honda.olympus.utils.ProcessFileUtils;
 import com.honda.olympus.vo.EventVO;
 import com.honda.olympus.vo.MaxTransitCallVO;
 import com.honda.olympus.vo.MaxTransitResponseVO;
@@ -47,21 +44,20 @@ public class AckgmHdmService {
 	private AfeOrdersActionHistoryRepository afeOrdersHistoryRepository;
 
 	@Autowired
-	private AfeAckEvRepository afeAckEvRepository;
+	private AfeActionRepository afeActionRepository;
 
 	@Autowired
-	private AfeActionRepository afeActionRepository;
-	
-	
+	private AfeAckMsgEvRepository afeAckMsgEvRepository;
+
 	private String ipAddress;
 
 	public void callAckgmCheckHd(String ipAddress) throws JDBCConnectionException {
 		EventVO event;
 
 		Boolean successFlag = Boolean.FALSE;
-		
+
 		this.ipAddress = ipAddress;
-		
+
 		MaxTransitCallVO maxTransitMessage = new MaxTransitCallVO();
 
 		maxTransitMessage.setRequest(AckgmConstants.ACK_ORDER_REQUEST);
@@ -80,7 +76,7 @@ public class AckgmHdmService {
 			String rqstIdentifierMxtrs = maxTransitDetail.getRqst_identfr().trim();
 			String actionMxtrs = maxTransitDetail.getAction();
 
-			log.debug("AckgmHdm:: ----action----:: {}",rqstIdentifierMxtrs);
+			log.debug("AckgmHdm:: ----action----:: {}", rqstIdentifierMxtrs);
 
 			if (rqstIdentifierMxtrs.length() < 0) {
 
@@ -88,7 +84,7 @@ public class AckgmHdmService {
 				break;
 			}
 
-			//Create Flow
+			// Create Flow
 			if (AckgmConstants.CREATE_STATUS.equalsIgnoreCase(actionMxtrs)) {
 				log.debug("Start:: Create flow");
 
@@ -98,37 +94,34 @@ public class AckgmHdmService {
 
 				if (fixedOrders.isEmpty()) {
 
-					ackgmMessagesHandler.createAndLogMessageNoRqstIdtfr(rqstIdentifierMxtrs, "SELECT * FROM AFE_FIXED_ORDERS_EV WHERE REQST_IDENTFR");
+					ackgmMessagesHandler.createAndLogMessageNoRqstIdtfr(rqstIdentifierMxtrs,
+							"SELECT * FROM AFE_FIXED_ORDERS_EV WHERE REQST_IDENTFR");
 					break;
 				}
 
 				AfeFixedOrdersEvEntity fixedOrder = fixedOrders.get(0);
 
-				if (finalFlow(maxTransitDetail, fixedOrder)) {
+				if (createFlow(maxTransitDetail, fixedOrder)) {
 					successFlag = Boolean.TRUE;
 					log.debug("End:: Accepted flow");
 				}
 
 			} else {
 
-				if (AckgmConstants.FAILED_STATUS.equalsIgnoreCase(maxTransitDetail.getReqstStatus())) {
+				if (AckgmConstants.CHANGE_STATUS.equalsIgnoreCase(maxTransitDetail.getReqst_status())) {
 
-					if (failedFlow(fixedOrder.getId(), maxTransitDetail)) {
+					if (changeFlow(maxTransitDetail)) {
+						successFlag = Boolean.TRUE;
+						log.debug("End:: Accepted flow");
 
-						if (finalFlow(maxTransitDetail, fixedOrder)) {
-							successFlag = Boolean.TRUE;
-
-						}
 					}
 
 				}
 
-				if (AckgmConstants.CANCELED_STATUS.equalsIgnoreCase(maxTransitDetail.getReqstStatus())) {
-					if (canceledFlow(fixedOrder.getId(), maxTransitDetail)) {
-						if (finalFlow(maxTransitDetail, fixedOrder)) {
-							successFlag = Boolean.TRUE;
-
-						}
+				if (AckgmConstants.CANCEL_STATUS.equalsIgnoreCase(maxTransitDetail.getReqst_status())) {
+					if (canceledFlow(maxTransitDetail)) {
+						successFlag = Boolean.TRUE;
+						log.debug("End:: Accepted flow");
 					}
 				}
 
@@ -138,100 +131,265 @@ public class AckgmHdmService {
 			}
 
 		}
-
 		if (successFlag) {
+
 			ackgmMessagesHandler.successMessage();
 		}
 
 	}
 
-	private Boolean failedFlow(final Long fixedOrderId, MaxTransitResponseVO maxTransitDetail) {
-		EventVO event;
-		log.debug("Start:: Failed Flow ");
+	private Boolean changeFlow(final MaxTransitResponseVO maxTransitDetail) {
+		log.debug("Start:: Changed Flow ");
 
-		// QUERY6
-		List<AfeAckEvEntity> acks = afeAckEvRepository.findAllByFixedOrderId(fixedOrderId);
+		String strRqstIdtfr = maxTransitDetail.getRqst_identfr();
+		String vehOrderNumber = maxTransitDetail.getVeh_order_nbr();
+		String actionMxtrsp = maxTransitDetail.getAction();
+		String requestIdtfrMxtrsp = maxTransitDetail.getRqst_identfr();
+		String ordrNbrMxtrsp = maxTransitDetail.getVeh_order_nbr();
+		String rqstStatusMxtrsp = maxTransitDetail.getReqst_status();
 
-		if (acks.isEmpty()) {
+		// QUERY7
+		List<AfeFixedOrdersEvEntity> fixedOrders = afeFixedOrdersEvRepository
+				.findByRequestAndOrderNumber(vehOrderNumber, strRqstIdtfr);
 
-			ackgmMessagesHandler.createAndLogMessageFixedOrderAck(fixedOrderId);
+		if (fixedOrders.isEmpty()) {
+
+			ackgmMessagesHandler.createAfeAckMessageNoFixedOrderByOrdNmbr(strRqstIdtfr, vehOrderNumber,
+					"SELECT * FROM AFE_FIXED_ORDERS WHERE ORDER_NMBR AND REQUEST_IDTFR");
 			return Boolean.FALSE;
 		}
+
+		Long fixedOrderQ8 = fixedOrders.get(0).getId();
+
+		// QUERY8
+		List<AfeActionEvEntity> actions = afeActionRepository.findAllByAction(actionMxtrsp);
+		if (actions.isEmpty()) {
+
+			ackgmMessagesHandler.createAndLogMessageNoAction(maxTransitDetail, "");
+			return Boolean.FALSE;
+		}
+
+		Long actionIdQ8 = actions.get(0).getId();
+		Long modelColorIdQ8 = fixedOrders.get(0).getModelColorId();
+		Boolean envioFlagQ8 = fixedOrders.get(0).getEnvioFlagGm();
+
+		// QUERY9
+		AfeOrdersActionHistoryEntity orderHistory = new AfeOrdersActionHistoryEntity();
 
 		try {
-			// QUERY7
-			acks.get(0).setAckStatus(maxTransitDetail.getReqstStatus());
+			orderHistory.setActionId(actionIdQ8);
+			orderHistory.setFixedOrderId(fixedOrderQ8);
+			orderHistory.setModelColorId(modelColorIdQ8);
+			orderHistory.setEnvioFlagGm(envioFlagQ8);
 
-			JSONArray jsArray = new JSONArray(maxTransitDetail.getMesagge());
+			orderHistory.setCreationTimeStamp(new Date());
+			orderHistory
+					.setObs(String.format("Client IP: %s , TimeStamp: %s", this.ipAddress, AckgmUtils.getTimeStamp()));
+			orderHistory.setBstate(1);
 
-			acks.get(0).setAckMsg(jsArray.toString());
-			acks.get(0).setUpdateTimeStamp(new Date());
-			afeAckEvRepository.saveAndFlush(acks.get(0));
+			// QUERY10
+			afeOrdersHistoryRepository.save(orderHistory);
+
 		} catch (Exception e) {
 
-			ackgmMessagesHandler.createAndLogMessageAckUpdateFail("UPDATE * AFE_ACK_EV ");
+			ackgmMessagesHandler.createAndLogMessageOrderHistoryFail("INSERT * INTO AFE_ORDER_HISOTRY");
 			return Boolean.FALSE;
+
 		}
 
-		log.debug("End:: Failed Flow ");
+		AfeAckMsgEntity ackMessage = new AfeAckMsgEntity();
 
-		return Boolean.TRUE;
-
-	}
-
-	private Boolean canceledFlow(final Long fixedOrderId, MaxTransitResponseVO maxTransitDetail) {
-		log.debug("Start:: Failed Flow ");
-		EventVO event;
-
-		List<AfeAckEvEntity> acks = afeAckEvRepository.findAllByFixedOrderId(fixedOrderId);
-
-		if (acks.isEmpty()) {
-
-			ackgmMessagesHandler.createAndLogMessageFixedOrderAck(fixedOrderId);
-			return Boolean.FALSE;
-		}
-
-		if (!acks.get(0).getAckStatus().equalsIgnoreCase(AckgmConstants.FAILED_STATUS)) {
+		if (!maxTransitDetail.getReqst_status().equalsIgnoreCase(AckgmConstants.ACCEPTED_STATUS)) {
 
 			try {
-				// QUERY7
-				acks.get(0).setAckStatus(maxTransitDetail.getReqstStatus());
 
-				JSONArray jsArray = new JSONArray(maxTransitDetail.getMesagge());
+				ackMessage.setAfeOrderActionHistoryId(orderHistory.getId());
+				ackMessage.setAckStatus(maxTransitDetail.getReqst_status());
+				ackMessage.setAckMesage(maxTransitDetail.getMesagge().toString());
+				ackMessage.setLastChangeTimestamp(maxTransitDetail.getVo_last_chg_timestamp());
+				ackMessage.setCreationTimeStamp(new Date());
+				ackMessage.setEnvioFlagAhAck(Boolean.FALSE);
+				ackMessage.setCreateAckTimestamp(new Date());
 
-				acks.get(0).setAckMsg(jsArray.toString());
-				acks.get(0).setUpdateTimeStamp(new Date());
-				afeAckEvRepository.saveAndFlush(acks.get(0));
+				ackMessage.setObs(
+						String.format("Client IP: %s , TimeStamp: %s", this.ipAddress, AckgmUtils.getTimeStamp()));
+				ackMessage.setBstate(1);
+
+				// QUERY12
+				afeAckMsgEvRepository.saveAndFlush(ackMessage);
+
+				ackgmMessagesHandler.createAfeAckMessageAlternInsert(requestIdtfrMxtrsp, ordrNbrMxtrsp,
+						rqstStatusMxtrsp, actionMxtrsp);
+				log.debug("End:: changeFlow");
+				return Boolean.TRUE;
 			} catch (Exception e) {
-
-				ackgmMessagesHandler.createAndLogMessageAckUpdateFail("UPDATE * AFE_ACK_EV ");
-
+				ackgmMessagesHandler.createAfeAckMessageFail("INSERT * INTO AFE_ACK_MESSAGE");
 				return Boolean.FALSE;
 			}
 
-		} else {
-
-			ackgmMessagesHandler.createAndLogMessageNoCancelOrder(fixedOrderId);
-			return Boolean.FALSE;
-
 		}
 
-		log.debug("End:: Failed Flow ");
+		// QUERY11
+		try {
+
+			ackMessage.setAfeOrderActionHistoryId(orderHistory.getActionId());
+			ackMessage.setAckStatus(maxTransitDetail.getReqst_status());
+			ackMessage.setAckMesage(maxTransitDetail.getMesagge().toString());
+			ackMessage.setLastChangeTimestamp(maxTransitDetail.getVo_last_chg_timestamp());
+			ackMessage.setCreateAckTimestamp(new Date());
+			ackMessage.setEnvioFlagAhAck(Boolean.FALSE);
+			ackMessage.setCreationTimeStamp(new Date());
+
+			ackMessage
+					.setObs(String.format("Client IP: %s , TimeStamp: %s", this.ipAddress, AckgmUtils.getTimeStamp()));
+			ackMessage.setBstate(1);
+
+			afeAckMsgEvRepository.saveAndFlush(ackMessage);
+		} catch (Exception e) {
+			ackgmMessagesHandler.createAfeAckMessageFail("INSERT * INTO AFE_ACK_MESSAGE");
+			return Boolean.FALSE;
+		}
+
+		ackgmMessagesHandler.createAfeAckMessageInsertSuccess(maxTransitDetail.getRqst_identfr(),
+				maxTransitDetail.getVeh_order_nbr());
+		log.debug("End:: Changed Flow ");
 
 		return Boolean.TRUE;
 
 	}
 
-	private Boolean finalFlow(MaxTransitResponseVO maxTransitDetail, AfeFixedOrdersEvEntity fixedOrder) {
+	private Boolean canceledFlow(final MaxTransitResponseVO maxTransitDetail) {
+		log.debug("Start:: Cancel Flow ");
+
+		String strRqstIdtfr = maxTransitDetail.getRqst_identfr();
+		String vehOrderNumber = maxTransitDetail.getVeh_order_nbr();
+		String actionMxtrsp = maxTransitDetail.getAction();
+		String requestIdtfrMxtrsp = maxTransitDetail.getRqst_identfr();
+		String ordrNbrMxtrsp = maxTransitDetail.getVeh_order_nbr();
+		String rqstStatusMxtrsp = maxTransitDetail.getReqst_status();
+
+		// QUERY13
+		List<AfeFixedOrdersEvEntity> fixedOrders = afeFixedOrdersEvRepository
+				.findByRequestAndOrderNumber(vehOrderNumber, strRqstIdtfr);
+
+		if (fixedOrders.isEmpty()) {
+
+			ackgmMessagesHandler.createAfeAckMessageNoFixedOrderByOrdNmbr(strRqstIdtfr, vehOrderNumber,
+					"SELECT * FROM AFE_FIXED_ORDERS WHERE ORDER_NMBR AND REQUEST_IDTFR");
+			return Boolean.FALSE;
+		}
+
+		Long fixedOrderQ8 = fixedOrders.get(0).getId();
+
+		// QUERY14
+		List<AfeActionEvEntity> actions = afeActionRepository.findAllByAction(actionMxtrsp);
+		if (actions.isEmpty()) {
+
+			ackgmMessagesHandler.createAndLogMessageNoAction(maxTransitDetail, "");
+			return Boolean.FALSE;
+		}
+
+		Long actionIdQ8 = actions.get(0).getId();
+		Long modelColorIdQ8 = fixedOrders.get(0).getModelColorId();
+		Boolean envioFlagQ8 = fixedOrders.get(0).getEnvioFlagGm();
+
+		// QUERY15
+		AfeOrdersActionHistoryEntity orderHistory = new AfeOrdersActionHistoryEntity();
+
+		try {
+			orderHistory.setActionId(actionIdQ8);
+			orderHistory.setFixedOrderId(fixedOrderQ8);
+			orderHistory.setModelColorId(modelColorIdQ8);
+			orderHistory.setEnvioFlagGm(envioFlagQ8);
+
+			orderHistory.setCreationTimeStamp(new Date());
+			orderHistory
+					.setObs(String.format("Client IP: %s , TimeStamp: %s", this.ipAddress, AckgmUtils.getTimeStamp()));
+			orderHistory.setBstate(1);
+
+			// QUERY16
+			afeOrdersHistoryRepository.save(orderHistory);
+
+		} catch (Exception e) {
+
+			ackgmMessagesHandler.createAndLogMessageOrderHistoryFail("INSERT * INTO AFE_ORDER_HISOTRY");
+			return Boolean.FALSE;
+
+		}
+
+		AfeAckMsgEntity ackMessage = new AfeAckMsgEntity();
+		if (!maxTransitDetail.getReqst_status().equalsIgnoreCase(AckgmConstants.ACCEPTED_STATUS)) {
+
+			try {
+
+				ackMessage.setAfeOrderActionHistoryId(orderHistory.getId());
+				ackMessage.setAckStatus(maxTransitDetail.getReqst_status());
+				ackMessage.setAckMesage(maxTransitDetail.getMesagge().toString());
+				ackMessage.setLastChangeTimestamp(maxTransitDetail.getVo_last_chg_timestamp());
+				ackMessage.setCreationTimeStamp(new Date());
+				ackMessage.setEnvioFlagAhAck(Boolean.FALSE);
+				ackMessage.setCreateAckTimestamp(new Date());
+
+				ackMessage.setObs(
+						String.format("Client IP: %s , TimeStamp: %s", this.ipAddress, AckgmUtils.getTimeStamp()));
+				ackMessage.setBstate(1);
+
+				// QUERY12
+				afeAckMsgEvRepository.saveAndFlush(ackMessage);
+
+				ackgmMessagesHandler.createAfeAckMessageAlternInsert(requestIdtfrMxtrsp, ordrNbrMxtrsp,
+						rqstStatusMxtrsp, actionMxtrsp);
+				log.debug("End:: changeFlow");
+				return Boolean.TRUE;
+			} catch (Exception e) {
+				ackgmMessagesHandler.createAfeAckMessageFail("INSERT * INTO AFE_ACK_MESSAGE");
+				return Boolean.FALSE;
+			}
+
+		}
+
+		// QUERY11
+		try {
+
+			ackMessage.setAfeOrderActionHistoryId(orderHistory.getActionId());
+			ackMessage.setAckStatus(maxTransitDetail.getReqst_status());
+			ackMessage.setAckMesage(maxTransitDetail.getMesagge().toString());
+			ackMessage.setLastChangeTimestamp(maxTransitDetail.getVo_last_chg_timestamp());
+			ackMessage.setCreateAckTimestamp(new Date());
+			ackMessage.setEnvioFlagAhAck(Boolean.FALSE);
+			ackMessage.setCreationTimeStamp(new Date());
+
+			ackMessage
+					.setObs(String.format("Client IP: %s , TimeStamp: %s", this.ipAddress, AckgmUtils.getTimeStamp()));
+			ackMessage.setBstate(1);
+
+			afeAckMsgEvRepository.saveAndFlush(ackMessage);
+		} catch (Exception e) {
+			ackgmMessagesHandler.createAfeAckMessageFail("INSERT * INTO AFE_ACK_MESSAGE");
+			return Boolean.FALSE;
+		}
+
+		ackgmMessagesHandler.createAfeAckMessageInsertSuccess(maxTransitDetail.getRqst_identfr(),
+				maxTransitDetail.getVeh_order_nbr());
+		log.debug("End:: Canceled Flow ");
+
+		return Boolean.TRUE;
+
+	}
+
+	private Boolean createFlow(MaxTransitResponseVO maxTransitDetail, AfeFixedOrdersEvEntity fixedOrder) {
 
 		log.debug("Start:: finalFlow");
 		EventVO event;
-		
+
 		Long fixedOrderIdQ1 = fixedOrder.getId();
 		Long modelColorIdQ1 = fixedOrder.getModelColorId();
 		String requstIdQ1 = fixedOrder.getRequestId();
 		Boolean envioFlagQ1 = fixedOrder.getEnvioFlagGm();
 		String actionMxtrsp = maxTransitDetail.getAction();
+		String requestIdtfrMxtrsp = maxTransitDetail.getRqst_identfr();
+		String ordrNbrMxtrsp = maxTransitDetail.getVeh_order_nbr();
+		String rqstStatusMxtrsp = maxTransitDetail.getReqst_status();
 
 		// QUERY2
 		List<AfeActionEvEntity> actions = afeActionRepository.findAllByAction(actionMxtrsp);
@@ -240,7 +398,7 @@ public class AckgmHdmService {
 			ackgmMessagesHandler.createAndLogMessageNoAction(maxTransitDetail, "");
 			return Boolean.FALSE;
 		}
-		
+
 		Long actionIdQ2 = actions.get(0).getId();
 
 		// QUERY3
@@ -251,15 +409,14 @@ public class AckgmHdmService {
 			orderHistory.setFixedOrderId(fixedOrderIdQ1);
 			orderHistory.setModelColorId(modelColorIdQ1);
 			orderHistory.setEnvioFlagGm(envioFlagQ1);
-			
+
 			orderHistory.setCreationTimeStamp(new Date());
-			orderHistory.setObs(
-					String.format("Client IP: %s , TimeStamp: %s", this.ipAddress, AckgmUtils.getTimeStamp()));
+			orderHistory
+					.setObs(String.format("Client IP: %s , TimeStamp: %s", this.ipAddress, AckgmUtils.getTimeStamp()));
 			orderHistory.setBstate(1);
-			
+
 			afeOrdersHistoryRepository.save(orderHistory);
 
-			ackgmMessagesHandler.createAndLogMessageSuccessAction(maxTransitDetail);
 		} catch (Exception e) {
 
 			ackgmMessagesHandler.createAndLogMessageOrderHistoryFail("INSERT * INTO AFE_ORDER_HISOTRY");
@@ -267,6 +424,74 @@ public class AckgmHdmService {
 
 		}
 
+		// QUERY4
+		Long idActionOrderHistoryQ4 = orderHistory.getId();
+
+		AfeAckMsgEntity ackMessage = new AfeAckMsgEntity();
+
+		if (!maxTransitDetail.getReqst_status().equalsIgnoreCase(AckgmConstants.ACCEPTED_STATUS)) {
+
+			try {
+
+				ackMessage.setAfeOrderActionHistoryId(idActionOrderHistoryQ4);
+				ackMessage.setAckStatus(maxTransitDetail.getReqst_status());
+				ackMessage.setAckMesage(maxTransitDetail.getMesagge().toString());
+				ackMessage.setLastChangeTimestamp(maxTransitDetail.getVo_last_chg_timestamp());
+				ackMessage.setCreationTimeStamp(new Date());
+				ackMessage.setEnvioFlagAhAck(Boolean.TRUE);
+				ackMessage.setObs(
+						String.format("Client IP: %s , TimeStamp: %s", this.ipAddress, AckgmUtils.getTimeStamp()));
+				ackMessage.setBstate(1);
+
+				afeAckMsgEvRepository.saveAndFlush(ackMessage);
+
+				ackgmMessagesHandler.createAfeAckMessageAlternInsert(requestIdtfrMxtrsp, ordrNbrMxtrsp,
+						rqstStatusMxtrsp, actionMxtrsp);
+				log.debug("End:: finalFlow");
+				return Boolean.TRUE;
+			} catch (Exception e) {
+				ackgmMessagesHandler.createAfeAckMessageFail("INSERT * INTO AFE_ACK_MESSAGE");
+				return Boolean.FALSE;
+			}
+
+		}
+
+		// QUERY5
+		try {
+
+			ackMessage.setAfeOrderActionHistoryId(idActionOrderHistoryQ4);
+			ackMessage.setAckStatus(maxTransitDetail.getReqst_status());
+			ackMessage.setAckMesage(maxTransitDetail.getMesagge().toString());
+			ackMessage.setLastChangeTimestamp(maxTransitDetail.getVo_last_chg_timestamp());
+			ackMessage.setCreationTimeStamp(new Date());
+			ackMessage.setEnvioFlagAhAck(Boolean.FALSE);
+			ackMessage.setCreateAckTimestamp(new Date());
+			ackMessage
+					.setObs(String.format("Client IP: %s , TimeStamp: %s", this.ipAddress, AckgmUtils.getTimeStamp()));
+			ackMessage.setBstate(1);
+
+			afeAckMsgEvRepository.saveAndFlush(ackMessage);
+		} catch (Exception e) {
+			ackgmMessagesHandler.createAfeAckMessageFail("INSERT * INTO AFE_ACK_MESSAGE");
+			return Boolean.FALSE;
+		}
+
+		try {
+
+			AfeFixedOrdersEvEntity updateFixedOrder = afeFixedOrdersEvRepository.getById(fixedOrderIdQ1);
+
+			updateFixedOrder.setOrderNumber(maxTransitDetail.getVeh_order_nbr());
+			updateFixedOrder.setUpdateTimeStamp(new Date());
+
+			afeFixedOrdersEvRepository.saveAndFlush(updateFixedOrder);
+
+		} catch (Exception e) {
+			ackgmMessagesHandler.createAndLogMessageQueryFailed("UPDATE * INTO AFE_FIXED_ORDERS");
+			return Boolean.FALSE;
+		}
+
+		ackgmMessagesHandler.createAfeAckMessageInsertSuccess(maxTransitDetail.getRqst_identfr(),
+				maxTransitDetail.getVeh_order_nbr());
 		log.debug("End:: finalFlow");
 		return Boolean.TRUE;
 
