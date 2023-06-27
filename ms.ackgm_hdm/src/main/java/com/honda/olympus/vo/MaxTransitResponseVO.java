@@ -172,6 +172,10 @@ public class MaxTransitResponseVO {
 
 
 	public String getReqst_status() {
+		//TODO Fix database size
+		if(reqst_status.equalsIgnoreCase("CANCELLED"))
+			return reqst_status.subSequence(0, 8).toString();	
+		
 		return reqst_status;
 	}
 

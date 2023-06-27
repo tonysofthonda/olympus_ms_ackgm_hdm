@@ -29,13 +29,13 @@ public class AckgmMessagesHandler {
 	private static final String QUERY_VALIDATION = 	"Fallo en la ejecución del query de inserción en la tabla AFE_FIXED_ORDERS_EV con el query: %s ";
 	private static final String STATUS_VALIDATION = "El reqst_status no es valido: %s";
 	private static final String FIXED_ORDER_NO_EXIST_ACK = "No existe el fixed_order_id: %s en la tabla AFE_ACK_EV";
-	private static final String QUERY_EXECUTION_FAIL = "Fallo en la ejecución del query de actualización en la tabla AFE_FIXED_ORDERS_EV con el query: %s";
+	private static final String QUERY_EXECUTION_FAIL = "Fallo en la ejecución del query de actualización en la tabla AFE_FIXED_ORDERS_EV con el query: %s Due to: %s";
 	private static final String NO_CANCEL_FAIL = "La orden: %s tiene un esatus: %s NO es posible cancelarla en la tabla AFE_ACK_EV ";
 	private static final String QUERY_UPDATE_ACK_FAIL = "Fallo en la ejecución del query de actualización en la tabla AFE_ACK_EV con el query: %s";
 	private static final String QUERY_UPDATE_ACTION_FAIL = "NO EXISTE la acción: %s en la tabla AFE_ACTION  con el query: %s";	
 	private static final String ACTION_SUCCESS = "El proceso fué realizado con éxito para la orden: %s y estatus: %s";
 	private static final String ORDER_HISTORY_FAIL = "Fallo en la jecución de inserción de la tabla AFE_ORDER_HISOTRY con el query: %s";
-	private static final String ORDER_ACK_MESSAGE_FAIL = "Fallo en la jecución de inserción de la tabla AFE_ACK_MESSAGE con el query: %s";
+	private static final String ORDER_ACK_MESSAGE_FAIL = "Fallo en la jecución de inserción de la tabla AFE_ACK_MESSAGE con el query: %s Due to: %s";
 	private static final String ORDER_ACK_MESSAGE_ALTERN_INSERT = "El registro: %s y %s tuvo un estatus de %s con la acción: %s";
 	private static final String FIXED_ORDER_NOT_FOUN_ORDR_NBMR = "No se encontró EL reqst_idntfr: %s y el order_number: %s en la tabla AFE_FIXED_ORDERS_EV con el query: %s";
 	private static final String INSERT_SUCCESS = "Actualización exitosa del registro: %s y el order_number: %s en la tabla AFE_FIXED_ORDERS_EV";
@@ -106,9 +106,9 @@ public class AckgmMessagesHandler {
 		sendAndLog();
 	}
 	
-	public void createAndLogMessageQueryFailed(String query) {
+	public void createAndLogMessageQueryFailed(String query,String cause) {
 
-		this.message = String.format(QUERY_EXECUTION_FAIL, query);
+		this.message = String.format(QUERY_EXECUTION_FAIL, query,cause);
 		this.event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS, message, "");
 
 		sendAndLog();
@@ -155,9 +155,9 @@ public class AckgmMessagesHandler {
 		sendAndLog();
 	}
 	
-	public void createAfeAckMessageFail(String query) {
+	public void createAfeAckMessageFail(String query,String cause) {
 
-		this.message = String.format(ORDER_ACK_MESSAGE_FAIL,query);
+		this.message = String.format(ORDER_ACK_MESSAGE_FAIL,query,cause);
 		this.event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS, message, "");
 
 		sendAndLog();

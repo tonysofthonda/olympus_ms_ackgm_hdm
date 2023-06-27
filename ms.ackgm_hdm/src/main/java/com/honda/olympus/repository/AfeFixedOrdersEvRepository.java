@@ -20,4 +20,9 @@ public interface AfeFixedOrdersEvRepository extends JpaRepository<AfeFixedOrders
 	@Query("SELECT o FROM AfeFixedOrdersEvEntity o WHERE  o.requestId = :requestId AND o.orderNumber = :orderNumber ")
 	List<AfeFixedOrdersEvEntity> findByRequestAndOrderNumber(@Param("orderNumber") String orderNumber,
 			@Param("requestId") String requestId);
+	
+	
+	@Query("SELECT o FROM AfeFixedOrdersEvEntity o WHERE o.id = :id ")
+	AfeFixedOrdersEvEntity findAllById(@Param("id") Long id);
+	
 }

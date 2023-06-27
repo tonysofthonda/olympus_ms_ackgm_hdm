@@ -23,7 +23,7 @@ public class AckgmScheduller {
 	Long timeLapse;
 
 	@Scheduled(fixedDelayString = "${service.timelapse}")
-	public void monitorScheduledTask() throws IOException {
+	public void ackgmScheduledTask() throws IOException {
 		log.info("Ackgm_hdm:: Start Scheduller running ");
 
 		try {

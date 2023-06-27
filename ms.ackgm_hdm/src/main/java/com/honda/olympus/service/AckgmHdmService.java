@@ -52,8 +52,6 @@ public class AckgmHdmService {
 	private String ipAddress;
 
 	public void callAckgmCheckHd(String ipAddress) throws JDBCConnectionException {
-		EventVO event;
-
 		Boolean successFlag = Boolean.FALSE;
 
 		this.ipAddress = ipAddress;
@@ -108,7 +106,7 @@ public class AckgmHdmService {
 
 			} else {
 
-				if (AckgmConstants.CHANGE_STATUS.equalsIgnoreCase(maxTransitDetail.getReqst_status())) {
+				if (AckgmConstants.CHANGE_STATUS.equalsIgnoreCase(actionMxtrs)) {
 
 					if (changeFlow(maxTransitDetail)) {
 						successFlag = Boolean.TRUE;
@@ -118,7 +116,7 @@ public class AckgmHdmService {
 
 				}
 
-				if (AckgmConstants.CANCEL_STATUS.equalsIgnoreCase(maxTransitDetail.getReqst_status())) {
+				if (AckgmConstants.CANCEL_STATUS.equalsIgnoreCase(actionMxtrs)) {
 					if (canceledFlow(maxTransitDetail)) {
 						successFlag = Boolean.TRUE;
 						log.debug("End:: Accepted flow");
@@ -223,7 +221,7 @@ public class AckgmHdmService {
 				log.debug("End:: changeFlow");
 				return Boolean.TRUE;
 			} catch (Exception e) {
-				ackgmMessagesHandler.createAfeAckMessageFail("INSERT * INTO AFE_ACK_MESSAGE");
+				ackgmMessagesHandler.createAfeAckMessageFail("INSERT * INTO AFE_ACK_MESSAGE",e.getLocalizedMessage());
 				return Boolean.FALSE;
 			}
 
@@ -246,7 +244,7 @@ public class AckgmHdmService {
 
 			afeAckMsgEvRepository.saveAndFlush(ackMessage);
 		} catch (Exception e) {
-			ackgmMessagesHandler.createAfeAckMessageFail("INSERT * INTO AFE_ACK_MESSAGE");
+			ackgmMessagesHandler.createAfeAckMessageFail("INSERT * INTO AFE_ACK_MESSAGE",e.getLocalizedMessage());
 			return Boolean.FALSE;
 		}
 
@@ -342,7 +340,8 @@ public class AckgmHdmService {
 				log.debug("End:: changeFlow");
 				return Boolean.TRUE;
 			} catch (Exception e) {
-				ackgmMessagesHandler.createAfeAckMessageFail("INSERT * INTO AFE_ACK_MESSAGE");
+				log.error("Exception ocurred due to {}",e.getLocalizedMessage());
+				ackgmMessagesHandler.createAfeAckMessageFail("INSERT * INTO AFE_ACK_MESSAGE",e.getLocalizedMessage());
 				return Boolean.FALSE;
 			}
 
@@ -365,7 +364,7 @@ public class AckgmHdmService {
 
 			afeAckMsgEvRepository.saveAndFlush(ackMessage);
 		} catch (Exception e) {
-			ackgmMessagesHandler.createAfeAckMessageFail("INSERT * INTO AFE_ACK_MESSAGE");
+			ackgmMessagesHandler.createAfeAckMessageFail("INSERT * INTO AFE_ACK_MESSAGE",e.getLocalizedMessage());
 			return Boolean.FALSE;
 		}
 
@@ -450,7 +449,7 @@ public class AckgmHdmService {
 				log.debug("End:: finalFlow");
 				return Boolean.TRUE;
 			} catch (Exception e) {
-				ackgmMessagesHandler.createAfeAckMessageFail("INSERT * INTO AFE_ACK_MESSAGE");
+				ackgmMessagesHandler.createAfeAckMessageFail("INSERT * INTO AFE_ACK_MESSAGE",e.getLocalizedMessage());
 				return Boolean.FALSE;
 			}
 
@@ -472,13 +471,13 @@ public class AckgmHdmService {
 
 			afeAckMsgEvRepository.saveAndFlush(ackMessage);
 		} catch (Exception e) {
-			ackgmMessagesHandler.createAfeAckMessageFail("INSERT * INTO AFE_ACK_MESSAGE");
+			ackgmMessagesHandler.createAfeAckMessageFail("INSERT * INTO AFE_ACK_MESSAGE",e.getLocalizedMessage());
 			return Boolean.FALSE;
 		}
 
 		try {
 
-			AfeFixedOrdersEvEntity updateFixedOrder = afeFixedOrdersEvRepository.getById(fixedOrderIdQ1);
+			AfeFixedOrdersEvEntity updateFixedOrder = afeFixedOrdersEvRepository.findAllById(fixedOrderIdQ1);
 
 			updateFixedOrder.setOrderNumber(maxTransitDetail.getVeh_order_nbr());
 			updateFixedOrder.setUpdateTimeStamp(new Date());
@@ -486,7 +485,10 @@ public class AckgmHdmService {
 			afeFixedOrdersEvRepository.saveAndFlush(updateFixedOrder);
 
 		} catch (Exception e) {
-			ackgmMessagesHandler.createAndLogMessageQueryFailed("UPDATE * INTO AFE_FIXED_ORDERS");
+			
+			log.error("Error updating AFE_FIXED_ORDERS due to {} ",e.getLocalizedMessage());
+			
+			ackgmMessagesHandler.createAndLogMessageQueryFailed("UPDATE * INTO AFE_FIXED_ORDERS",e.getLocalizedMessage());
 			return Boolean.FALSE;
 		}
 
