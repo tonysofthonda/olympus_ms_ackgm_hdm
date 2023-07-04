@@ -79,7 +79,7 @@ public class AckgmHdmService {
 			if (rqstIdentifierMxtrs.length() < 0) {
 
 				ackgmMessagesHandler.createAndLogMessage(rqstIdentifierMxtrs, maxTransitDetail);
-				break;
+				continue;
 			}
 
 			// Create Flow
@@ -88,13 +88,13 @@ public class AckgmHdmService {
 
 				// QUERY1
 				List<AfeFixedOrdersEvEntity> fixedOrders = afeFixedOrdersEvRepository
-						.findAllByRqstId(rqstIdentifierMxtrs);
+						.findAllByRqstId(rqstIdentifierMxtrs.trim());
 
 				if (fixedOrders.isEmpty()) {
 
 					ackgmMessagesHandler.createAndLogMessageNoRqstIdtfr(rqstIdentifierMxtrs,
 							"SELECT * FROM AFE_FIXED_ORDERS_EV WHERE REQST_IDENTFR");
-					break;
+					continue;
 				}
 
 				AfeFixedOrdersEvEntity fixedOrder = fixedOrders.get(0);
@@ -148,7 +148,7 @@ public class AckgmHdmService {
 
 		// QUERY7
 		List<AfeFixedOrdersEvEntity> fixedOrders = afeFixedOrdersEvRepository
-				.findByRequestAndOrderNumber(vehOrderNumber, strRqstIdtfr);
+				.findByRequestAndOrderNumber(vehOrderNumber.trim(), strRqstIdtfr.trim());
 
 		if (fixedOrders.isEmpty()) {
 

@@ -14,7 +14,7 @@ public class ResponseVO {
 		this.source = source;
 		this.status = status;
 		this.message = message;
-		this.file = file;
+		this.file = file; 
 	}
 
 	public String getSource() {
