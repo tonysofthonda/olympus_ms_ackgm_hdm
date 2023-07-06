@@ -71,7 +71,7 @@ public class AckgmHdmService {
 		while (it.hasNext()) {
 
 			MaxTransitResponseVO maxTransitDetail = it.next();
-			String rqstIdentifierMxtrs = maxTransitDetail.getRqst_identfr().trim();
+			String rqstIdentifierMxtrs = maxTransitDetail.getReqst_identfr().trim();
 			String actionMxtrs = maxTransitDetail.getAction();
 
 			log.debug("AckgmHdm:: ----action----:: {}", rqstIdentifierMxtrs);
@@ -139,10 +139,10 @@ public class AckgmHdmService {
 	private Boolean changeFlow(final MaxTransitResponseVO maxTransitDetail) {
 		log.debug("Start:: Changed Flow ");
 
-		String strRqstIdtfr = maxTransitDetail.getRqst_identfr();
+		String strRqstIdtfr = maxTransitDetail.getReqst_identfr();
 		String vehOrderNumber = maxTransitDetail.getVeh_order_nbr();
 		String actionMxtrsp = maxTransitDetail.getAction();
-		String requestIdtfrMxtrsp = maxTransitDetail.getRqst_identfr();
+		String requestIdtfrMxtrsp = maxTransitDetail.getReqst_identfr();
 		String ordrNbrMxtrsp = maxTransitDetail.getVeh_order_nbr();
 		String rqstStatusMxtrsp = maxTransitDetail.getReqst_status();
 
@@ -248,7 +248,7 @@ public class AckgmHdmService {
 			return Boolean.FALSE;
 		}
 
-		ackgmMessagesHandler.createAfeAckMessageInsertSuccess(maxTransitDetail.getRqst_identfr(),
+		ackgmMessagesHandler.createAfeAckMessageInsertSuccess(maxTransitDetail.getReqst_identfr(),
 				maxTransitDetail.getVeh_order_nbr());
 		log.debug("End:: Changed Flow ");
 
@@ -259,10 +259,10 @@ public class AckgmHdmService {
 	private Boolean canceledFlow(final MaxTransitResponseVO maxTransitDetail) {
 		log.debug("Start:: Cancel Flow ");
 
-		String strRqstIdtfr = maxTransitDetail.getRqst_identfr();
+		String strRqstIdtfr = maxTransitDetail.getReqst_identfr();
 		String vehOrderNumber = maxTransitDetail.getVeh_order_nbr();
 		String actionMxtrsp = maxTransitDetail.getAction();
-		String requestIdtfrMxtrsp = maxTransitDetail.getRqst_identfr();
+		String requestIdtfrMxtrsp = maxTransitDetail.getReqst_identfr();
 		String ordrNbrMxtrsp = maxTransitDetail.getVeh_order_nbr();
 		String rqstStatusMxtrsp = maxTransitDetail.getReqst_status();
 
@@ -368,7 +368,7 @@ public class AckgmHdmService {
 			return Boolean.FALSE;
 		}
 
-		ackgmMessagesHandler.createAfeAckMessageInsertSuccess(maxTransitDetail.getRqst_identfr(),
+		ackgmMessagesHandler.createAfeAckMessageInsertSuccess(maxTransitDetail.getReqst_identfr(),
 				maxTransitDetail.getVeh_order_nbr());
 		log.debug("End:: Canceled Flow ");
 
@@ -386,7 +386,7 @@ public class AckgmHdmService {
 		String requstIdQ1 = fixedOrder.getRequestId();
 		Boolean envioFlagQ1 = fixedOrder.getEnvioFlagGm();
 		String actionMxtrsp = maxTransitDetail.getAction();
-		String requestIdtfrMxtrsp = maxTransitDetail.getRqst_identfr();
+		String requestIdtfrMxtrsp = maxTransitDetail.getReqst_identfr();
 		String ordrNbrMxtrsp = maxTransitDetail.getVeh_order_nbr();
 		String rqstStatusMxtrsp = maxTransitDetail.getReqst_status();
 
@@ -492,7 +492,7 @@ public class AckgmHdmService {
 			return Boolean.FALSE;
 		}
 
-		ackgmMessagesHandler.createAfeAckMessageInsertSuccess(maxTransitDetail.getRqst_identfr(),
+		ackgmMessagesHandler.createAfeAckMessageInsertSuccess(maxTransitDetail.getReqst_identfr(),
 				maxTransitDetail.getVeh_order_nbr());
 		log.debug("End:: finalFlow");
 		return Boolean.TRUE;

@@ -141,7 +141,7 @@ public class AckgmMessagesHandler {
 	
 	public void createAndLogMessageSuccessAction(MaxTransitResponseVO maxTransitDetail) {
 
-		this.message = String.format(ACTION_SUCCESS,maxTransitDetail.getRqst_identfr(),maxTransitDetail.getReqst_status());
+		this.message = String.format(ACTION_SUCCESS,maxTransitDetail.getReqst_identfr(),maxTransitDetail.getReqst_status());
 		this.event = new EventVO(serviceName, AckgmConstants.ONE_STATUS, message, "");
 
 		sendAndLog();

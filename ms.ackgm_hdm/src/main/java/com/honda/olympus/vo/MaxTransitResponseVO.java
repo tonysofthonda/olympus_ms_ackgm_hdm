@@ -19,7 +19,7 @@ public class MaxTransitResponseVO {
 	private String chrgBusnsFncCd;
 	private String shipBusnsAsctCd;
 	private String shioBusnsFncCd;
-	private String rqst_identfr;
+	private String reqst_identfr;
 	
 	private String reqst_status;
 	private List<String> mesagge = new ArrayList<>();
@@ -160,14 +160,13 @@ public class MaxTransitResponseVO {
 		this.shioBusnsFncCd = shioBusnsFncCd;
 	}
 
-
-	public String getRqst_identfr() {
-		return rqst_identfr;
+	public String getReqst_identfr() {
+		return reqst_identfr;
 	}
 
 
-	public void setRqst_identfr(String rqst_identfr) {
-		this.rqst_identfr = rqst_identfr;
+	public void setReqst_identfr(String reqst_identfr) {
+		this.reqst_identfr = reqst_identfr;
 	}
 
 
