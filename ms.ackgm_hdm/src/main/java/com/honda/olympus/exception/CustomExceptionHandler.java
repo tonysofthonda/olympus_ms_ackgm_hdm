@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.honda.olympus.service.LogEventService;
+import com.honda.olympus.vo.EventVO;
 import org.hibernate.exception.JDBCConnectionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,14 +40,20 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler{
 	
 	@Autowired
 	NotificationService notificationService;
+
+	@Autowired
+	private LogEventService logEventService;
 	
 	@ExceptionHandler(Exception.class)
 	public final ResponseEntity<Object> handleAllExceptions(Exception ex, WebRequest request){
-		
-		String notificationMessage = String.format( "No es posbile conectarse a la base de datos: %s User: %s", host,user);
-		MessageVO message = new MessageVO(serviceName, AckgmConstants.ZERO_STATUS,notificationMessage , "");
+
+		String notificationMessage = String.format( "No es posible conectarse a la base de datos: %s User: %s", host,user);
+		this.logEventService.sendLogEvent(new EventVO(serviceName, AckgmConstants.ZERO_STATUS, notificationMessage, ""));
+
+		MessageVO message = new MessageVO(serviceName, AckgmConstants.ZERO_STATUS, "104 Error al obtener la información. No se pudo obtener la información correctamente de MAXTRANSIT, favor de revisar", "");
 		notificationService.generatesNotification(message);
-		
+
+
 		ResponseVO error = new ResponseVO(serviceName,0L,"Unknown", "");
 		
 		return new ResponseEntity<>(error,HttpStatus.INTERNAL_SERVER_ERROR);

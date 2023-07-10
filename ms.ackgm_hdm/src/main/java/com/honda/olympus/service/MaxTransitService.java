@@ -3,6 +3,7 @@ package com.honda.olympus.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.honda.olympus.vo.MessageVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -39,6 +40,9 @@ public class MaxTransitService {
 	@Autowired
 	LogEventService logEventService;
 
+	@Autowired
+	private NotificationService notificationService;
+
 	public List<MaxTransitResponseVO> generateCallMaxtransit(MaxTransitCallVO message) {
 
 		List<MaxTransitResponseVO> maxTransitResponse = new ArrayList<>();
@@ -60,6 +64,8 @@ public class MaxTransitService {
 
 				logEventService.sendLogEvent(new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
 						"La API de MAXTRANSIT retornó un error: " + responseEntity.getStatusCode(), ""));
+
+				notificationService.generatesNotification(new MessageVO(serviceName, AckgmConstants.ZERO_STATUS, "104 Error al obtener la información. No se pudo obtener la información correctamente de MAXTRANSIT, favor de revisar", ""));
 				log.debug("Error calling MAXTRANSIT service");
 			}
 
@@ -68,6 +74,9 @@ public class MaxTransitService {
 
 			logEventService.sendLogEvent(new EventVO(serviceName, AckgmConstants.ZERO_STATUS,
 					"Tiempo de espera agotado en la consulta a la API MAXTRANSIT ubicada en: " + maxTRansitURI, ""));
+
+			notificationService.generatesNotification(new MessageVO(serviceName, AckgmConstants.ZERO_STATUS, "104 Error al obtener la información. El MAXTRANSIT no responde", ""));
+
 			log.debug("Ackgm_hdm:: Error calling MAXTRANSIT service, Timeout");
 
 			return maxTransitResponse;

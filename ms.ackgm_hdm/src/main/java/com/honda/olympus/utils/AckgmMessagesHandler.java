@@ -1,6 +1,9 @@
 package com.honda.olympus.utils;
 
 import java.util.List;
+
+import com.honda.olympus.service.NotificationService;
+import com.honda.olympus.vo.MessageVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -16,6 +19,9 @@ public class AckgmMessagesHandler {
 
 	@Autowired
 	LogEventService logEventService;
+
+	@Autowired
+	private NotificationService notificationService;
 
 	@Value("${service.name}")
 	private String serviceName;
@@ -52,6 +58,7 @@ public class AckgmMessagesHandler {
 		this.message = String.format(MAX_TRANSIT_VALIDATION, maxTransitData.toString());
 		this.event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS, message, "");
 
+		this.notificationService.generatesNotification(new MessageVO(serviceName, AckgmConstants.ZERO_STATUS, "104 Error al obtener la información. No se pudo obtener la información correctamente de MAXTRANSIT, favor de revisar", ""));
 		sendAndLog();
 	}
 
@@ -60,6 +67,8 @@ public class AckgmMessagesHandler {
 		this.message = String.format(MAJOR_EQUAL_VALIDATION, rqstIdentifier, maxTransitDetail.toString());
 		this.event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS, message, "");
 
+		this.notificationService.generatesNotification(new MessageVO(serviceName, AckgmConstants.ZERO_STATUS, "104 Error al obtener la información. No se pudo obtener la información correctamente de MAXTRANSIT, favor de revisar", ""));
+
 		sendAndLog();
 	}
 
@@ -67,6 +76,8 @@ public class AckgmMessagesHandler {
 
 		this.message = String.format(REQUST_IDTFR_VALIDATION, rqstIdentifier,query);
 		this.event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS, message, "");
+
+		this.notificationService.generatesNotification(new MessageVO(serviceName, AckgmConstants.ZERO_STATUS, String.format("103 El request ID no se encontró en AFE. El request ID %s recibido de MAXTRANSIT no se encontro en la BD de AFE. Favor de revisar", rqstIdentifier), ""));
 
 		sendAndLog();
 	}
@@ -95,6 +106,7 @@ public class AckgmMessagesHandler {
 		this.event = new EventVO(serviceName, AckgmConstants.ONE_STATUS,successMessage, "");
 		
 		logEventService.sendLogEvent(this.event);
+		this.notificationService.generatesNotification(new MessageVO(serviceName, AckgmConstants.ONE_STATUS, "203 Guardado con Exito. Se proceso correctamente las ordenes de MAXTRANSIT", ""));
 		log.debug("{}:: {}",serviceName,successMessage);
 	}
 	
@@ -135,6 +147,8 @@ public class AckgmMessagesHandler {
 
 		this.message = String.format(QUERY_UPDATE_ACTION_FAIL,maxTransitDetail.getAction(),query);
 		this.event = new EventVO(serviceName, AckgmConstants.ZERO_STATUS, message, "");
+
+		this.notificationService.generatesNotification(new MessageVO(serviceName, AckgmConstants.ZERO_STATUS, "104 Error al obtener la información. No se pudo obtener la información correctamente de MAXTRANSIT, favor de revisar", ""));
 
 		sendAndLog();
 	}
